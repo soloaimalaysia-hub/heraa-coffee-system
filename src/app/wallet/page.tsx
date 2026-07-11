@@ -209,6 +209,24 @@ export default function WalletPage() {
           </div>
         </div>
 
+        {/* Garden Entry */}
+        <button
+          onClick={() => router.push("/garden")}
+          className="w-full rounded-xl p-3 mb-3 flex items-center gap-3 text-left transition-colors hover:bg-green-50"
+          style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+        >
+          <div className="text-2xl">🌱</div>
+          <div>
+            <div className="text-xs font-semibold text-green-700">
+              我的咖啡豆
+            </div>
+            <div className="text-[10px] text-green-500">
+              每天浇水，30天换免费咖啡
+            </div>
+          </div>
+          <div className="ml-auto text-green-400 text-sm">→</div>
+        </button>
+
         {/* Redeem Button */}
         <button
           onClick={() => setShowMenu(!showMenu)}
