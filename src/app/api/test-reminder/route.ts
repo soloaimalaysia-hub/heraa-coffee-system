@@ -26,12 +26,13 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    await supabase.from("heraa_whatsapp_logs").insert({
-      phone: testTo,
-      message_type: "test_reminder",
-      message_body: msg,
-      twilio_sid: result.sid,
-      status: "sent",
+    await supabase.rpc("heraa_log_whatsapp", {
+      p_member_id: null,
+      p_phone: testTo,
+      p_message_type: "test_reminder",
+      p_message_body: msg,
+      p_twilio_sid: result.sid,
+      p_status: "sent",
     });
 
     return NextResponse.json({ success: true, sid: result.sid });

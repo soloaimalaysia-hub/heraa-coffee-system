@@ -38,13 +38,13 @@ async function runReminder() {
     try {
       const result = await sendWhatsApp(t.phone, msg);
 
-      await supabase.from("heraa_whatsapp_logs").insert({
-        member_id: t.member_id,
-        phone: t.phone,
-        message_type: "daily_reminder",
-        message_body: msg,
-        twilio_sid: result.sid,
-        status: "sent",
+      await supabase.rpc("heraa_log_whatsapp", {
+        p_member_id: t.member_id,
+        p_phone: t.phone,
+        p_message_type: "daily_reminder",
+        p_message_body: msg,
+        p_twilio_sid: result.sid,
+        p_status: "sent",
       });
 
       sent++;
@@ -52,13 +52,14 @@ async function runReminder() {
       const errMsg = (err as Error).message;
       errors.push(`${t.name}: ${errMsg}`);
 
-      await supabase.from("heraa_whatsapp_logs").insert({
-        member_id: t.member_id,
-        phone: t.phone,
-        message_type: "daily_reminder",
-        message_body: msg,
-        status: "failed",
-        error: errMsg,
+      await supabase.rpc("heraa_log_whatsapp", {
+        p_member_id: t.member_id,
+        p_phone: t.phone,
+        p_message_type: "daily_reminder",
+        p_message_body: msg,
+        p_twilio_sid: null,
+        p_status: "failed",
+        p_error: errMsg,
       });
     }
   }
