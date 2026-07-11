@@ -287,6 +287,37 @@ function AdminContent() {
             <div className="text-xs mb-3 px-2">{testResult}</div>
           )}
 
+          {/* Manual Daily Reminder Trigger */}
+          <button
+            onClick={async () => {
+              setTestSending(true);
+              setTestResult("");
+              try {
+                const res = await fetch("/api/daily-reminder", {
+                  method: "POST",
+                  headers: { "x-admin-key": "heraa2026" },
+                });
+                const data = await res.json();
+                setTestResult(
+                  data.sent > 0
+                    ? `✅ 已发送 ${data.sent}/${data.total} 人浇水提醒`
+                    : `ℹ️ ${data.message || "没有需要提醒的会员"}`
+                );
+              } catch (err: unknown) {
+                setTestResult(`❌ ${(err as Error).message}`);
+              }
+              setTestSending(false);
+            }}
+            disabled={testSending}
+            className="w-full border border-orange-200 bg-orange-50 text-orange-700 font-semibold rounded-lg py-2.5 text-xs mb-3 disabled:opacity-50"
+          >
+            {testSending ? "发送中..." : "🌱 手动触发每日浇水提醒"}
+          </button>
+
+          <div className="text-[10px] text-gray-400 mb-3 px-1">
+            ⏰ 自动提醒已配置：每天 9:00am MYT 自动发送给未浇水会员
+          </div>
+
           <div className="border-t border-gray-100 pt-3 mt-1">
             <textarea
               value={waMsg}
