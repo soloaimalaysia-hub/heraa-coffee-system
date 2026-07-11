@@ -42,6 +42,12 @@ function AdminContent() {
   const [selectedDrink, setSelectedDrink] = useState(DRINKS[0]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [waMsg, setWaMsg] = useState("");
+  const [waTarget, setWaTarget] = useState("all");
+  const [waSending, setWaSending] = useState(false);
+  const [waResult, setWaResult] = useState("");
+  const [testSending, setTestSending] = useState(false);
+  const [testResult, setTestResult] = useState("");
   const txRef = useRef<TxRow[]>([]);
 
   const loadData = useCallback(async () => {
@@ -240,6 +246,100 @@ function AdminContent() {
           >
             {sent ? "✅ 已发送！" : sending ? "发送中..." : "☕ 模拟出咖啡"}
           </button>
+        </div>
+
+        {/* WhatsApp Broadcast */}
+        <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+          <div className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+            📱 WhatsApp 推送中心
+          </div>
+
+          {/* Quick Test */}
+          <button
+            onClick={async () => {
+              setTestSending(true);
+              setTestResult("");
+              try {
+                const res = await fetch("/api/send-whatsapp", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": "heraa2026",
+                  },
+                  body: JSON.stringify({
+                    to: process.env.NEXT_PUBLIC_TWILIO_TEST_TO || "whatsapp:+60169212796",
+                    message: "☕ Heraa Coffee 测试消息\n\n系统运作正常！展会准备就绪 🔥",
+                  }),
+                });
+                const data = await res.json();
+                setTestResult(data.success ? "✅ 测试消息已发送！" : `❌ ${data.error}`);
+              } catch (err: unknown) {
+                setTestResult(`❌ ${(err as Error).message}`);
+              }
+              setTestSending(false);
+            }}
+            disabled={testSending}
+            className="w-full border border-green-200 bg-green-50 text-green-700 font-semibold rounded-lg py-2.5 text-xs mb-3 disabled:opacity-50"
+          >
+            {testSending ? "发送中..." : "🧪 发送测试消息给 Captain K"}
+          </button>
+          {testResult && (
+            <div className="text-xs mb-3 px-2">{testResult}</div>
+          )}
+
+          <div className="border-t border-gray-100 pt-3 mt-1">
+            <textarea
+              value={waMsg}
+              onChange={(e) => setWaMsg(e.target.value)}
+              placeholder="输入推送消息内容..."
+              rows={3}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none resize-none"
+            />
+
+            <select
+              value={waTarget}
+              onChange={(e) => setWaTarget(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none"
+            >
+              <option value="all">全部会员</option>
+              <option value="low_balance">余额 &lt; RM10</option>
+            </select>
+
+            <button
+              onClick={async () => {
+                if (!waMsg.trim()) return;
+                setWaSending(true);
+                setWaResult("");
+                try {
+                  const res = await fetch("/api/broadcast", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "x-admin-key": "heraa2026",
+                    },
+                    body: JSON.stringify({ message: waMsg, target: waTarget }),
+                  });
+                  const data = await res.json();
+                  setWaResult(`✅ 已发送 ${data.sent}/${data.total} 人`);
+                  if (data.errors?.length > 0) {
+                    setWaResult((prev) => prev + ` (${data.errors.length} 失败)`);
+                  }
+                  setWaMsg("");
+                } catch (err: unknown) {
+                  setWaResult(`❌ ${(err as Error).message}`);
+                }
+                setWaSending(false);
+              }}
+              disabled={waSending || !waMsg.trim()}
+              className="w-full text-white font-semibold rounded-lg py-2.5 text-sm disabled:opacity-50"
+              style={{ background: "#25D366" }}
+            >
+              {waSending ? "发送中..." : "📱 发送 WhatsApp"}
+            </button>
+            {waResult && (
+              <div className="text-xs mt-2 px-2">{waResult}</div>
+            )}
+          </div>
         </div>
 
         {/* Transaction Feed */}
