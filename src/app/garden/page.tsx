@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchMe } from "@/lib/session";
 import { track } from "@/lib/track";
+import { useLang } from "@/lib/LanguageContext";
 
 interface GardenState {
   day_count: number;
@@ -14,17 +15,15 @@ interface GardenState {
   can_water: boolean;
 }
 
-const STAGE_CONFIG: Record<
-  string,
-  { emoji: string; label: string; color: string }
-> = {
-  seed: { emoji: "🌰", label: "种子期", color: "#8B6914" },
-  sprout: { emoji: "🌱", label: "发芽期", color: "#2E8B57" },
-  flower: { emoji: "🌿", label: "开花期", color: "#228B22" },
-  ready: { emoji: "☕", label: "收获！", color: "#C8111A" },
+const STAGE_META: Record<string, { emoji: string; color: string; idx: number }> = {
+  seed: { emoji: "🌰", color: "#8B6914", idx: 0 },
+  sprout: { emoji: "🌱", color: "#2E8B57", idx: 1 },
+  flower: { emoji: "🌿", color: "#228B22", idx: 2 },
+  ready: { emoji: "☕", color: "#C8111A", idx: 3 },
 };
 
 export default function GardenPage() {
+  const { t } = useLang();
   const router = useRouter();
   const [garden, setGarden] = useState<GardenState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +95,8 @@ export default function GardenPage() {
     );
   }
 
-  const stage = garden ? STAGE_CONFIG[garden.stage] || STAGE_CONFIG.seed : STAGE_CONFIG.seed;
+  const stageMeta = garden ? STAGE_META[garden.stage] || STAGE_META.seed : STAGE_META.seed;
+  const stage = { ...stageMeta, label: t.gardenStages[stageMeta.idx] };
   const progress = garden ? Math.min((garden.day_count / 30) * 100, 100) : 0;
   const daysLeft = garden ? Math.max(30 - garden.day_count, 0) : 30;
 
@@ -108,7 +108,7 @@ export default function GardenPage() {
           HERAA COFFEE
         </div>
         <div className="text-white/70 text-[10px] mt-0.5">
-          🌱 咖啡豆成长计划
+          {t.gardenTitle}
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export default function GardenPage() {
             {stage.label}
           </div>
           <div className="text-xs text-gray-400 mt-1">
-            第 {garden?.day_count || 0} 天 / 30 天
+            {garden?.day_count || 0} {t.gardenProgress}
           </div>
         </div>
 
@@ -160,10 +160,10 @@ export default function GardenPage() {
             />
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-[10px] text-gray-400">🌰 种子</span>
-            <span className="text-[10px] text-gray-400">🌱 发芽</span>
-            <span className="text-[10px] text-gray-400">🌿 开花</span>
-            <span className="text-[10px] text-gray-400">☕ 收获</span>
+            <span className="text-[10px] text-gray-400">🌰 {t.gardenStages[0]}</span>
+            <span className="text-[10px] text-gray-400">🌱 {t.gardenStages[1]}</span>
+            <span className="text-[10px] text-gray-400">🌿 {t.gardenStages[2]}</span>
+            <span className="text-[10px] text-gray-400">☕ {t.gardenStages[3]}</span>
           </div>
         </div>
 
@@ -174,7 +174,7 @@ export default function GardenPage() {
             style={{ background: "#FFF3F3", border: "1px solid #FFD0D0" }}
           >
             <div className="text-xs text-gray-500">
-              还差 <span className="font-bold" style={{ color: "#C8111A" }}>{daysLeft}</span> 天获得免费咖啡
+              {t.gardenDaysLeft} <span className="font-bold" style={{ color: "#C8111A" }}>{daysLeft}</span> {t.gardenDaysUnit}
             </div>
           </div>
         )}
@@ -183,10 +183,10 @@ export default function GardenPage() {
         {rewardMsg && (
           <div className="rounded-xl px-4 py-3 mb-4 text-center bg-green-50 border border-green-200">
             <div className="text-sm font-bold text-green-700">
-              🎉 恭喜！你获得了一杯免费 Heraa Signature Latte！
+              {t.gardenReward}
             </div>
             <div className="text-xs text-green-500 mt-1">
-              请到钱包查看兑换码
+              {t.gardenRewardSub}
             </div>
           </div>
         )}
@@ -199,16 +199,16 @@ export default function GardenPage() {
           style={{ background: "#C8111A" }}
         >
           {watering
-            ? "浇水中..."
+            ? t.gardenWatering
             : !garden?.can_water
-            ? "✅ 今日已浇水，明天再来"
-            : "💧 浇水 (+1天)"}
+            ? t.gardenWatered
+            : t.gardenWater}
         </button>
 
         {/* Today's Task */}
         <div className="w-full max-w-xs mt-4 rounded-xl border border-gray-100 p-3">
           <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            每日任务
+            {t.gardenTask}
           </div>
           <div className="flex items-center gap-2">
             <div
@@ -220,7 +220,7 @@ export default function GardenPage() {
             >
               {!garden?.can_water ? "✓" : "○"}
             </div>
-            <span className="text-xs text-gray-600">给咖啡豆浇水</span>
+            <span className="text-xs text-gray-600">{t.gardenTaskItem}</span>
           </div>
         </div>
 
@@ -230,7 +230,7 @@ export default function GardenPage() {
           className="mt-6 text-xs font-medium"
           style={{ color: "#C8111A" }}
         >
-          ← 返回钱包
+          {t.gardenBack}
         </button>
       </div>
     </div>

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { track } from "@/lib/track";
+import { useLang } from "@/lib/LanguageContext";
 
 export default function LoginPage() {
+  const { t, lang, toggleLang } = useLang();
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [staffId, setStaffId] = useState("");
@@ -59,20 +61,20 @@ export default function LoginPage() {
           <div className="text-white font-bold text-lg tracking-wider">
             HERAA COFFEE
           </div>
-          <div className="text-white/70 text-xs mt-1">Member Wallet</div>
+          <div className="text-white/70 text-xs mt-1">{t.walletTitle}</div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="text-5xl mb-4">📱</div>
           <h2 className="text-lg font-bold text-gray-800 mb-2">
-            检查你的 WhatsApp
+            {t.loginSent}
           </h2>
           <p className="text-sm text-gray-500 text-center leading-relaxed">
-            登入链接已发送到
+            {t.loginSentSub}
             <br />
             <span className="font-semibold text-gray-700">{phone}</span>
             <br />
             <br />
-            链接 <span style={{ color: "#C8111A" }} className="font-bold">5 分钟</span> 内有效
+            {t.loginSentValid} <span style={{ color: "#C8111A" }} className="font-bold">{t.loginSentValidMin}</span> {t.loginSentValidAfter}
           </p>
           <button
             onClick={() => {
@@ -82,7 +84,7 @@ export default function LoginPage() {
             className="mt-8 text-sm font-medium"
             style={{ color: "#C8111A" }}
           >
-            ← 返回重新输入
+            {t.loginBackReset}
           </button>
         </div>
       </div>
@@ -91,31 +93,39 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="py-8 text-center" style={{ background: "#C8111A" }}>
+      <div className="py-8 text-center relative" style={{ background: "#C8111A" }}>
+        <button
+          onClick={toggleLang}
+          className="absolute top-3 right-3 text-white text-xs font-medium rounded px-2.5 py-1 border"
+          style={{
+            background: "rgba(255,255,255,0.15)",
+            borderColor: "rgba(255,255,255,0.3)",
+          }}
+        >
+          {lang === "zh" ? "EN" : "中文"}
+        </button>
         <div className="text-white font-bold text-lg tracking-wider">
           HERAA COFFEE
         </div>
-        <div className="text-white/70 text-xs mt-1">Member Wallet</div>
+        <div className="text-white/70 text-xs mt-1">{t.walletTitle}</div>
       </div>
 
       <div className="flex-1 px-6 py-8">
-        <h2 className="text-lg font-bold text-gray-800 mb-1">员工登入</h2>
+        <h2 className="text-lg font-bold text-gray-800 mb-1">{t.loginTitle}</h2>
         <p className="text-xs text-gray-400 mb-6">
-          {showInfo
-            ? "首次登入 · 请填写姓名和工号"
-            : "输入 WhatsApp 手机号，我们发送登入链接给你"}
+          {showInfo ? t.loginSubInfo : t.loginSubPhone}
         </p>
 
         <form onSubmit={handleSend} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">
-              WhatsApp 手机号
+              {t.loginPhone}
             </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="011-1234 5678"
+              placeholder={t.loginPhonePlaceholder}
               required
               disabled={showInfo}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 disabled:bg-gray-50"
@@ -127,13 +137,13 @@ export default function LoginPage() {
             <>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  姓名
+                  {t.loginName}
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Kenny Ngui"
+                  placeholder={t.loginNamePlaceholder}
                   required
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
                   style={
@@ -143,13 +153,13 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  工号 Staff ID
+                  {t.loginStaffId}
                 </label>
                 <input
                   type="text"
                   value={staffId}
                   onChange={(e) => setStaffId(e.target.value)}
-                  placeholder="e.g. GEN-0042"
+                  placeholder={t.loginStaffPlaceholder}
                   required
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
                   style={
@@ -161,7 +171,7 @@ export default function LoginPage() {
                 className="text-[10px] text-gray-400 rounded-lg p-2"
                 style={{ background: "#FFF3F3" }}
               >
-                💡 首次登入将自动开通钱包（RM20 津贴）
+                {t.loginWalletHint}
               </div>
             </>
           )}
@@ -179,15 +189,15 @@ export default function LoginPage() {
             style={{ background: "#C8111A" }}
           >
             {loading
-              ? "发送中..."
+              ? t.loginBtnSending
               : showInfo
-              ? "📱 提交并发送链接"
-              : "📱 发送 WhatsApp 登入链接"}
+              ? t.loginBtnSubmit
+              : t.loginBtn}
           </button>
 
           {!showInfo && (
             <p className="text-[10px] text-center text-gray-400 mt-3">
-              ⚠️ Twilio Sandbox 用户：先发 <code className="bg-gray-100 px-1 rounded">join doctor-through</code> 到 +1 415 523 8886
+              {t.loginSandboxHint} <code className="bg-gray-100 px-1 rounded">join doctor-through</code> {t.loginSandboxTarget}
             </p>
           )}
         </form>

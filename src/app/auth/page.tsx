@@ -3,8 +3,10 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { track } from "@/lib/track";
+import { useLang } from "@/lib/LanguageContext";
 
 function AuthContent() {
+  const { t } = useLang();
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -50,14 +52,14 @@ function AuthContent() {
             {error}
           </h2>
           <p className="text-xs text-gray-400 text-center mb-6">
-            链接可能已过期或已被使用
+            {t.authInvalidSub}
           </p>
           <button
             onClick={() => router.replace("/login")}
             className="text-white font-semibold rounded-xl py-3 px-6 text-sm"
             style={{ background: "#C8111A" }}
           >
-            返回重新发送
+            {t.authReturn}
           </button>
         </div>
       </div>
@@ -70,7 +72,7 @@ function AuthContent() {
       <div className="font-bold text-lg mb-1" style={{ color: "#C8111A" }}>
         HERAA COFFEE
       </div>
-      <div className="text-sm text-gray-500">正在验证你的身份...</div>
+      <div className="text-sm text-gray-500">{t.authVerifying}</div>
     </div>
   );
 }

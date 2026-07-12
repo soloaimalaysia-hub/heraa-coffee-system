@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/lib/LanguageContext";
 
 interface Member {
   id: string;
@@ -16,6 +17,7 @@ interface Member {
 }
 
 export default function MembersTab() {
+  const { t } = useLang();
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function MembersTab() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍 搜索姓名 / 手机号 / 工号"
+          placeholder={t.memberSearch}
           className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2"
           style={{ "--tw-ring-color": "#C8111A" } as React.CSSProperties}
         />
@@ -49,30 +51,30 @@ export default function MembersTab() {
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            👥 会员列表
+            👥 {t.memberList}
           </div>
           <div className="text-[10px] text-gray-400">
-            共 {members.length} 位
+            {t.memberTotal} {members.length} {t.memberUnit}
           </div>
         </div>
 
         {loading ? (
           <div className="p-8 text-center text-xs text-gray-300 animate-pulse">
-            加载中...
+            {t.memberLoading}
           </div>
         ) : members.length === 0 ? (
           <div className="p-8 text-center text-xs text-gray-300">
-            {search ? "未找到匹配会员" : "暂无会员"}
+            {search ? t.memberNoResult : t.memberEmpty}
           </div>
         ) : (
           <>
           {/* Desktop table header */}
           <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr] gap-4 px-6 py-2 bg-gray-50 border-b border-gray-100">
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">姓名</div>
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">手机号</div>
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">工号</div>
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">兑换</div>
-            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide text-right">余额</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.memberName}</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.memberPhone}</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.memberStaffId}</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.memberRedemptionsCol}</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide text-right">{t.memberBalance}</div>
           </div>
           {members.map((m) => (
             <div
@@ -89,7 +91,7 @@ export default function MembersTab() {
                     {m.phone} · {m.staff_id || "—"}
                   </div>
                   <div className="text-[10px] text-gray-400 md:hidden">
-                    {m.total_redemptions} 笔兑换 · {m.company}
+                    {m.total_redemptions} {t.memberRedemptions} · {m.company}
                   </div>
                 </div>
                 {/* Desktop-only cells */}

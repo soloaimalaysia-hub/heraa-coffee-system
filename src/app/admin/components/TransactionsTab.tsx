@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/lib/LanguageContext";
 
 interface TxRow {
   id: string;
@@ -14,6 +15,7 @@ interface TxRow {
 }
 
 export default function TransactionsTab() {
+  const { t } = useLang();
   const [transactions, setTransactions] = useState<TxRow[]>([]);
   const txRef = useRef<TxRow[]>([]);
 
@@ -101,7 +103,7 @@ export default function TransactionsTab() {
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          🧾 实时交易流水
+          🧾 {t.txnTitle}
         </div>
         <div className="flex items-center gap-1 text-[10px] text-gray-400">
           <span
@@ -114,16 +116,16 @@ export default function TransactionsTab() {
 
       {transactions.length === 0 ? (
         <div className="p-8 text-center text-xs text-gray-300">
-          暂无交易记录
+          {t.txnEmpty}
         </div>
       ) : (
         <>
         {/* Desktop table header */}
         <div className="hidden md:grid md:grid-cols-[2fr_1fr_2fr_1fr] gap-4 px-6 py-2 bg-gray-50 border-b border-gray-100">
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">会员</div>
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">时间</div>
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">饮品</div>
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide text-right">金额</div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.txnMember}</div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.txnTime}</div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t.txnDrink}</div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide text-right">{t.txnAmount}</div>
         </div>
         {transactions.map((tx) => (
           <div
@@ -168,7 +170,7 @@ export default function TransactionsTab() {
         </>
       )}
       <div className="px-4 py-2 text-[10px] text-gray-400 text-center">
-        显示最新 {transactions.length} 笔交易
+        {t.txnLatest} {transactions.length} {t.txnRecords}
       </div>
     </div>
   );

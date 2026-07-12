@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/lib/LanguageContext";
 
 interface Stats {
   today_cups: number;
@@ -18,6 +19,7 @@ const DRINKS = [
 ];
 
 export default function SimulateTab() {
+  const { t } = useLang();
   const [stats, setStats] = useState<Stats>({
     today_cups: 0,
     total_members: 0,
@@ -71,7 +73,7 @@ export default function SimulateTab() {
           <div className="text-xl md:text-3xl font-bold" style={{ color: "#C8111A" }}>
             {stats.today_cups}
           </div>
-          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">今日杯数</div>
+          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">{t.todayCups}</div>
         </div>
         <div
           className="rounded-lg p-3 md:p-5 text-center"
@@ -80,30 +82,30 @@ export default function SimulateTab() {
           <div className="text-xl md:text-3xl font-bold" style={{ color: "#C8111A" }}>
             RM {stats.today_revenue.toFixed(0)}
           </div>
-          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">今日营收</div>
+          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">{t.todayRevenue}</div>
         </div>
       </div>
 
       {/* Simulate Form */}
       <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100">
         <div className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
-          ☕ 模拟出咖啡（展会用）
+          ☕ {t.simulateTitle}
         </div>
 
         <label className="block text-[10px] font-medium text-gray-500 mb-1">
-          投资人姓名
+          {t.investorName}
         </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Dato Sri Ahmad"
+          placeholder={t.investorPlaceholder}
           className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2"
           style={{ "--tw-ring-color": "#C8111A" } as React.CSSProperties}
         />
 
         <label className="block text-[10px] font-medium text-gray-500 mb-1">
-          饮品
+          {t.drink}
         </label>
         <select
           value={selectedDrink.name}
@@ -127,15 +129,11 @@ export default function SimulateTab() {
           className="w-full text-white font-semibold rounded-lg py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
           style={{ background: sent ? "#0F6E56" : "#C8111A" }}
         >
-          {sent
-            ? "✅ 已发送！"
-            : sending
-            ? "发送中..."
-            : "☕ 模拟出咖啡"}
+          {sent ? t.simulateSuccess : sending ? t.simulateSending : t.simulateBtn}
         </button>
 
         <div className="text-[10px] text-gray-400 mt-3 text-center">
-          🎬 按下后大屏幕 <code className="bg-gray-100 px-1 rounded">/screen</code> 实时跳出名字
+          🎬 {t.simulateHint}
         </div>
       </div>
     </div>

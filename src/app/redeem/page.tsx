@@ -3,8 +3,10 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
+import { useLang } from "@/lib/LanguageContext";
 
 function RedeemContent() {
+  const { t } = useLang();
   const searchParams = useSearchParams();
   const router = useRouter();
   const qrCode = searchParams.get("qr") || "";
@@ -44,7 +46,7 @@ function RedeemContent() {
         <div className="text-white font-bold text-base tracking-widest">
           HERAA COFFEE
         </div>
-        <div className="text-white/70 text-[10px] mt-0.5">兑换码</div>
+        <div className="text-white/70 text-[10px] mt-0.5">{t.redeemTitle}</div>
       </div>
 
       {/* QR Section */}
@@ -82,15 +84,15 @@ function RedeemContent() {
         {expired ? (
           <div className="text-center">
             <div className="text-sm font-semibold text-gray-400 mb-1">
-              ⏰ 兑换码已过期
+              {t.redeemExpired}
             </div>
             <div className="text-[10px] text-gray-300">
-              请返回钱包重新兑换
+              {t.redeemExpiredSub}
             </div>
           </div>
         ) : (
           <div className="text-center">
-            <div className="text-xs text-gray-400 mb-1">有效时间</div>
+            <div className="text-xs text-gray-400 mb-1">{t.redeemValidTime}</div>
             <div
               className="text-2xl font-bold font-mono"
               style={{ color: "var(--heraa-red)" }}
@@ -119,7 +121,7 @@ function RedeemContent() {
             color: "var(--heraa-red)",
           }}
         >
-          ← 返回钱包
+          {t.redeemBack}
         </button>
       </div>
     </div>
@@ -135,7 +137,7 @@ export default function RedeemPage() {
             className="animate-pulse font-bold"
             style={{ color: "var(--heraa-red)" }}
           >
-            加载中...
+            ...
           </div>
         </div>
       }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchMe, clearSession, Member, Wallet, Transaction } from "@/lib/session";
 import { track } from "@/lib/track";
+import { useLang } from "@/lib/LanguageContext";
 
 const DRINKS = [
   { name: "Heraa Americano", price: 6.5 },
@@ -15,6 +16,7 @@ const DRINKS = [
 ];
 
 export default function WalletPage() {
+  const { t, lang, toggleLang } = useLang();
   const router = useRouter();
   const [member, setMember] = useState<Member | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -91,21 +93,33 @@ export default function WalletPage() {
         className="pt-10 pb-5 text-center relative"
         style={{ background: "var(--heraa-red)" }}
       >
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <button
+            onClick={toggleLang}
+            className="text-white text-xs font-medium rounded px-2 py-1 border"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              borderColor: "rgba(255,255,255,0.3)",
+            }}
+          >
+            {lang === "zh" ? "EN" : "中文"}
+          </button>
+        </div>
         <button
           onClick={handleLogout}
           className="absolute top-3 right-3 text-white/70 text-xs px-2 py-1"
         >
-          退出
+          {t.walletLogout}
         </button>
         <div className="text-white font-bold text-base tracking-widest">
           HERAA COFFEE
         </div>
-        <div className="text-white/70 text-[10px] mt-0.5">Member Wallet</div>
+        <div className="text-white/70 text-[10px] mt-0.5">{t.walletTitle}</div>
         <div className="w-11 h-11 rounded-full bg-white/20 mx-auto mt-3 flex items-center justify-center text-white font-bold text-base">
           {member?.name?.charAt(0) || "?"}
         </div>
         <div className="text-white text-sm font-semibold mt-1.5">
-          {member?.name} · {member?.company}员工
+          {member?.name} · {member?.company} {t.walletEmployee}
         </div>
       </div>
 
@@ -121,7 +135,7 @@ export default function WalletPage() {
             className="text-[10px] font-semibold tracking-wide"
             style={{ color: "var(--heraa-red)" }}
           >
-            本月余额
+            {t.walletBalance}
           </div>
           <div
             className="text-3xl font-bold leading-tight my-1"
@@ -130,7 +144,7 @@ export default function WalletPage() {
             RM {Number(wallet?.balance ?? 0).toFixed(2)}
           </div>
           <div className="text-[10px] text-gray-400">
-            已用 RM {used.toFixed(2)} / 共 RM{" "}
+            {t.walletUsed} RM {used.toFixed(2)} {t.walletTotal} RM{" "}
             {Number(wallet?.monthly_allowance ?? 20).toFixed(2)}
           </div>
           <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -149,10 +163,10 @@ export default function WalletPage() {
           <div className="text-2xl">🌱</div>
           <div>
             <div className="text-xs font-semibold text-green-700">
-              我的咖啡豆
+              {t.walletGarden}
             </div>
             <div className="text-[10px] text-green-500">
-              每天浇水，30天换免费咖啡
+              {t.walletGardenSub}
             </div>
           </div>
           <div className="ml-auto text-green-400 text-sm">→</div>
@@ -164,7 +178,7 @@ export default function WalletPage() {
           className="w-full text-white font-semibold rounded-xl py-3 text-sm mb-3 disabled:opacity-50 transition-opacity"
           style={{ background: "var(--heraa-red)" }}
         >
-          {redeeming ? "处理中..." : "☕ 立即兑换咖啡"}
+          {redeeming ? t.walletProcessing : t.walletRedeem}
         </button>
 
         {showMenu && (
@@ -192,11 +206,11 @@ export default function WalletPage() {
         )}
 
         <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-2">
-          消费记录
+          {t.walletHistory}
         </div>
         {transactions.length === 0 ? (
           <div className="text-xs text-gray-300 text-center py-6">
-            暂无记录
+            {t.walletHistoryEmpty}
           </div>
         ) : (
           transactions.map((tx) => (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/lib/LanguageContext";
 
 interface Overview {
   total_members: number;
@@ -54,6 +55,7 @@ function downloadCSV(filename: string, csv: string) {
 }
 
 export default function AnalyticsTab() {
+  const { t } = useLang();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [funnel, setFunnel] = useState<Funnel | null>(null);
   const [gami, setGami] = useState<Gamification | null>(null);
@@ -117,10 +119,10 @@ export default function AnalyticsTab() {
 
   const funnelSteps = funnel
     ? [
-        { label: "打开 App", value: funnel.app_open },
-        { label: "看钱包", value: funnel.wallet_viewed },
-        { label: "按兑换", value: funnel.redeem_clicked },
-        { label: "成功兑换", value: funnel.redeem_success },
+        { label: t.funnelOpen, value: funnel.app_open },
+        { label: t.funnelWallet, value: funnel.wallet_viewed },
+        { label: t.funnelRedeem, value: funnel.redeem_clicked },
+        { label: t.funnelSuccess, value: funnel.redeem_success },
       ]
     : [];
   const funnelMax = Math.max(1, ...funnelSteps.map((s) => s.value));
@@ -131,36 +133,36 @@ export default function AnalyticsTab() {
       <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
         <div className="flex items-center justify-between mb-3 md:mb-4">
           <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            📊 数据报表 · 近 30 天
+            📊 {t.analyticsTitle}
           </div>
           <button
             onClick={load}
             className="text-[10px] md:text-xs text-gray-400 hover:text-gray-600"
             disabled={loading}
           >
-            🔄 刷新
+            🔄 {t.refresh}
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Kpi
-            label="总会员"
+            label={t.totalMembers}
             value={overview?.total_members ?? 0}
-            sub={`+${overview?.new_members ?? 0} 新增`}
+            sub={`+${overview?.new_members ?? 0} ${t.newMembers}`}
           />
           <Kpi
-            label="今日活跃"
+            label={t.todayActive}
             value={overview?.dau ?? 0}
-            sub={`7 日均 ${overview?.dau_7d_avg ?? 0}`}
+            sub={`${t.dayAvg} ${overview?.dau_7d_avg ?? 0}`}
           />
           <Kpi
-            label="30 日营收"
+            label={t.revenue30d}
             value={`RM ${Number(overview?.total_revenue ?? 0).toFixed(0)}`}
-            sub={`${overview?.total_redemptions ?? 0} 笔兑换`}
+            sub={`${overview?.total_redemptions ?? 0} ${t.redemptions}`}
           />
           <Kpi
-            label="游戏参与"
+            label={t.gameParticipants}
             value={gami?.total_garden_users ?? 0}
-            sub={`${overview?.watering_rate ?? 0}% 今日浇水`}
+            sub={`${overview?.watering_rate ?? 0}% ${t.todayWatering}`}
           />
         </div>
       </div>
@@ -169,7 +171,7 @@ export default function AnalyticsTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
       <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
         <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          用户漏斗 · 近 7 天
+          {t.funnelTitle}
         </div>
         {funnelSteps.map((step, i) => {
           const pct = funnelMax > 0 ? (step.value / funnelMax) * 100 : 0;
@@ -210,13 +212,13 @@ export default function AnalyticsTab() {
           className="text-xs md:text-sm font-semibold mb-2 md:mb-3 uppercase tracking-wide"
           style={{ color: "#0F6E56" }}
         >
-          🌱 咖啡豆游戏
+          🌱 {t.gameTitle}
         </div>
         <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
-          <Mini label="今日浇水" value={gami?.today_watering ?? 0} />
-          <Mini label="参与用户" value={gami?.total_garden_users ?? 0} />
-          <Mini label="已到 30 天" value={gami?.ready_users ?? 0} />
-          <Mini label="平均天数" value={gami?.avg_day_count ?? 0} />
+          <Mini label={t.gameWatering} value={gami?.today_watering ?? 0} />
+          <Mini label={t.gameUsers} value={gami?.total_garden_users ?? 0} />
+          <Mini label={t.game30days} value={gami?.ready_users ?? 0} />
+          <Mini label={t.gameAvgDays} value={gami?.avg_day_count ?? 0} />
         </div>
       </div>
       </div>
@@ -224,7 +226,7 @@ export default function AnalyticsTab() {
       {/* Export */}
       <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
         <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          📥 数据导出
+          📥 {t.exportTitle}
         </div>
         <div className="grid grid-cols-2 gap-2 md:gap-4">
           <button
@@ -232,18 +234,18 @@ export default function AnalyticsTab() {
             disabled={exporting !== ""}
             className="border border-gray-200 rounded-lg py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {exporting === "users" ? "导出中..." : "📥 用户 CSV"}
+            {exporting === "users" ? "..." : `📥 ${t.exportUsers}`}
           </button>
           <button
             onClick={exportTx}
             disabled={exporting !== ""}
             className="border border-gray-200 rounded-lg py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {exporting === "tx" ? "导出中..." : "📥 交易 CSV"}
+            {exporting === "tx" ? "..." : `📥 ${t.exportTxn}`}
           </button>
         </div>
         <div className="text-[9px] text-gray-400 mt-2 text-center">
-          导出近 90 天数据 · UTF-8 BOM · Excel 直接打开
+          {t.exportHint}
         </div>
       </div>
     </div>
