@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchMe } from "@/lib/session";
+import { track } from "@/lib/track";
 
 interface GardenState {
   day_count: number;
@@ -45,6 +46,7 @@ export default function GardenPage() {
     });
     if (data) setGarden(data);
     setLoading(false);
+    track("garden_viewed", me.member.id);
   }, [router]);
 
   useEffect(() => {
@@ -66,10 +68,12 @@ export default function GardenPage() {
       return;
     }
 
+    track("watering_done", memberId, { day_count: data.day_count, stage: data.stage });
     setJustWatered(true);
     setTimeout(() => setJustWatered(false), 2000);
 
     if (data.reward_generated) {
+      track("garden_reward_earned", memberId);
       setRewardMsg(true);
     }
 

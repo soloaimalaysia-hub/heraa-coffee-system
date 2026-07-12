@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { track } from "@/lib/track";
 
 function AuthContent() {
   const searchParams = useSearchParams();
@@ -27,6 +28,7 @@ function AuthContent() {
 
         localStorage.setItem("heraa_session", data.session_token);
         localStorage.setItem("heraa_member_id", data.member_id);
+        track("login_success", data.member_id);
         router.replace("/wallet");
       } catch (err: unknown) {
         setError((err as Error).message);

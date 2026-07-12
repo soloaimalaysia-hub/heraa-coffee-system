@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchMe, clearSession, Member, Wallet, Transaction } from "@/lib/session";
+import { track } from "@/lib/track";
 
 const DRINKS = [
   { name: "Heraa Americano", price: 6.5 },
@@ -32,6 +33,7 @@ export default function WalletPage() {
     setWallet(me.wallet);
     setTransactions(me.transactions);
     setLoading(false);
+    track("wallet_viewed", me.member.id);
   }, [router]);
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function WalletPage() {
 
   async function handleRedeem(drinkName: string, price: number) {
     if (!member || !wallet || wallet.balance < price) return;
+    track("redeem_clicked", member.id, { drink: drinkName, price });
     setRedeeming(true);
 
     const { data, error } = await supabase.rpc("heraa_generate_redemption", {
@@ -49,11 +52,13 @@ export default function WalletPage() {
     });
 
     if (error) {
+      track("redeem_failed", member.id, { reason: error.message, drink: drinkName });
       alert(error.message);
       setRedeeming(false);
       return;
     }
 
+    track("redeem_success", member.id, { drink: drinkName, amount: price });
     router.push(
       `/redeem?id=${data.id}&qr=${data.qr_code}&drink=${drinkName}&amount=${price}`
     );

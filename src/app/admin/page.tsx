@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { supabase } from "@/lib/supabase";
+import Analytics from "./Analytics";
 
 interface Stats {
   today_cups: number;
@@ -192,6 +193,9 @@ function AdminContent() {
       </div>
 
       <div className="p-4 max-w-lg mx-auto">
+        {/* Analytics Dashboard (Top) */}
+        <Analytics />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <StatCard value={stats.today_cups} label="今日杯数" />

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "@/lib/track";
 
 export default function LoginPage() {
   const [phone, setPhone] = useState("");
@@ -10,6 +11,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    track("app_open");
+  }, []);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -36,6 +41,7 @@ export default function LoginPage() {
         return;
       }
 
+      track("login_initiated", null, { phone });
       setSent(true);
     } catch (err: unknown) {
       setError((err as Error).message);
