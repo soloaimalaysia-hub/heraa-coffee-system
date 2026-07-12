@@ -11,6 +11,20 @@ export const metadata: Metadata = {
   title: "Heraa Coffee · Member Wallet",
   description: "Heraa Coffee Smart Vending - Employee Wallet System",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Heraa",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {

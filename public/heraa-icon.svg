@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#C8111A" rx="80"/>
+  <text x="256" y="200" font-family="Arial Black, Arial, sans-serif" font-size="96" font-weight="900" fill="white" text-anchor="middle" letter-spacing="4">HERAA</text>
+  <text x="256" y="260" font-family="Arial, sans-serif" font-size="34" font-weight="600" fill="rgba(255,255,255,0.85)" text-anchor="middle" letter-spacing="8">COFFEE</text>
+  <g transform="translate(256, 360)">
+    <path d="M -70 -20 L -70 30 Q -70 60 -40 60 L 30 60 Q 60 60 60 30 L 60 -20 Z" fill="white" stroke="white" stroke-width="3"/>
+    <path d="M 60 0 Q 90 0 90 20 Q 90 40 60 40" fill="none" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <path d="M -40 -50 Q -40 -35 -30 -30 Q -20 -25 -20 -10" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M -10 -55 Q -10 -40 0 -35 Q 10 -30 10 -15" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 20 -50 Q 20 -35 30 -30 Q 40 -25 40 -10" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.9"/>
+  </g>
+</svg>
