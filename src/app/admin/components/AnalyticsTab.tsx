@@ -126,22 +126,22 @@ export default function AnalyticsTab() {
   const funnelMax = Math.max(1, ...funnelSteps.map((s) => s.value));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       {/* KPI Grid */}
-      <div className="bg-white rounded-xl p-3 border border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide">
             📊 数据报表 · 近 30 天
           </div>
           <button
             onClick={load}
-            className="text-[10px] text-gray-400 hover:text-gray-600"
+            className="text-[10px] md:text-xs text-gray-400 hover:text-gray-600"
             disabled={loading}
           >
             🔄 刷新
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Kpi
             label="总会员"
             value={overview?.total_members ?? 0}
@@ -165,9 +165,10 @@ export default function AnalyticsTab() {
         </div>
       </div>
 
-      {/* Funnel */}
-      <div className="bg-white rounded-xl p-3 border border-gray-100">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+      {/* Funnel + Gamification side-by-side on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
+        <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           用户漏斗 · 近 7 天
         </div>
         {funnelSteps.map((step, i) => {
@@ -202,29 +203,30 @@ export default function AnalyticsTab() {
 
       {/* Gamification */}
       <div
-        className="rounded-xl p-3 border"
+        className="rounded-xl p-3 md:p-5 border"
         style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}
       >
         <div
-          className="text-xs font-semibold mb-2 uppercase tracking-wide"
+          className="text-xs md:text-sm font-semibold mb-2 md:mb-3 uppercase tracking-wide"
           style={{ color: "#0F6E56" }}
         >
           🌱 咖啡豆游戏
         </div>
-        <div className="grid grid-cols-4 gap-2 text-center">
+        <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
           <Mini label="今日浇水" value={gami?.today_watering ?? 0} />
           <Mini label="参与用户" value={gami?.total_garden_users ?? 0} />
           <Mini label="已到 30 天" value={gami?.ready_users ?? 0} />
           <Mini label="平均天数" value={gami?.avg_day_count ?? 0} />
         </div>
       </div>
+      </div>
 
       {/* Export */}
-      <div className="bg-white rounded-xl p-3 border border-gray-100">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
+        <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           📥 数据导出
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 md:gap-4">
           <button
             onClick={exportUsers}
             disabled={exporting !== ""}

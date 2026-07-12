@@ -33,7 +33,7 @@ function AdminContent() {
       <TopBar />
       <TabNav active={tab} onChange={setTab} />
 
-      <div className="p-4 max-w-lg mx-auto">
+      <div className="p-4 md:p-6 max-w-full md:max-w-6xl mx-auto">
         <div style={{ display: tab === "analytics" ? "block" : "none" }}>
           <AnalyticsTab />
         </div>

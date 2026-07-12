@@ -17,20 +17,20 @@ export default function TabNav({
 }) {
   return (
     <div className="bg-white border-b border-gray-100 sticky top-[44px] z-10">
-      <div className="flex overflow-x-auto max-w-lg mx-auto scrollbar-hide">
+      <div className="flex overflow-x-auto max-w-full md:max-w-6xl mx-auto scrollbar-hide px-4 md:px-6">
         {TABS.map((tab) => {
           const isActive = tab.key === active;
           return (
             <button
               key={tab.key}
               onClick={() => onChange(tab.key)}
-              className="flex-1 min-w-[70px] flex flex-col items-center py-2.5 px-2 transition-colors relative"
+              className="flex-1 min-w-[70px] md:min-w-[120px] flex flex-col md:flex-row md:items-center md:justify-center md:gap-2 items-center py-2.5 md:py-3 px-2 transition-colors relative"
               style={{
                 color: isActive ? "#C8111A" : "#9ca3af",
               }}
             >
-              <div className="text-base">{tab.icon}</div>
-              <div className="text-[10px] font-semibold mt-0.5">
+              <div className="text-base md:text-lg">{tab.icon}</div>
+              <div className="text-[10px] md:text-sm font-semibold mt-0.5 md:mt-0">
                 {tab.label}
               </div>
               {isActive && (

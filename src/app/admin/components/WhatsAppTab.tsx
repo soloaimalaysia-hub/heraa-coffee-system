@@ -77,9 +77,9 @@ export default function WhatsAppTab() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
       {/* Quick Send */}
-      <div className="bg-white rounded-xl p-4 border border-gray-100">
+      <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100">
         <div className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
           📱 快速发送
         </div>
@@ -122,7 +122,7 @@ export default function WhatsAppTab() {
       </div>
 
       {/* Broadcast */}
-      <div className="bg-white rounded-xl p-4 border border-gray-100">
+      <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100">
         <div className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
           📢 自定义广播
         </div>

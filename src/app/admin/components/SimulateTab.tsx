@@ -61,31 +61,31 @@ export default function SimulateTab() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4 md:max-w-2xl md:mx-auto">
       {/* Today KPIs */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
         <div
-          className="rounded-lg p-3 text-center"
+          className="rounded-lg p-3 md:p-5 text-center"
           style={{ background: "#FFF3F3" }}
         >
-          <div className="text-xl font-bold" style={{ color: "#C8111A" }}>
+          <div className="text-xl md:text-3xl font-bold" style={{ color: "#C8111A" }}>
             {stats.today_cups}
           </div>
-          <div className="text-[10px] text-gray-500 mt-0.5">今日杯数</div>
+          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">今日杯数</div>
         </div>
         <div
-          className="rounded-lg p-3 text-center"
+          className="rounded-lg p-3 md:p-5 text-center"
           style={{ background: "#FFF3F3" }}
         >
-          <div className="text-xl font-bold" style={{ color: "#C8111A" }}>
+          <div className="text-xl md:text-3xl font-bold" style={{ color: "#C8111A" }}>
             RM {stats.today_revenue.toFixed(0)}
           </div>
-          <div className="text-[10px] text-gray-500 mt-0.5">今日营收</div>
+          <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">今日营收</div>
         </div>
       </div>
 
       {/* Simulate Form */}
-      <div className="bg-white rounded-xl p-4 border border-gray-100">
+      <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100">
         <div className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
           ☕ 模拟出咖啡（展会用）
         </div>

@@ -65,25 +65,47 @@ export default function MembersTab() {
             {search ? "未找到匹配会员" : "暂无会员"}
           </div>
         ) : (
-          members.map((m) => (
+          <>
+          {/* Desktop table header */}
+          <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr] gap-4 px-6 py-2 bg-gray-50 border-b border-gray-100">
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">姓名</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">手机号</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">工号</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">兑换</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide text-right">余额</div>
+          </div>
+          {members.map((m) => (
             <div
               key={m.id}
-              className="flex justify-between items-center px-4 py-3 border-b border-gray-50"
+              className="md:grid md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr] md:gap-4 md:items-center flex justify-between items-center px-4 md:px-6 py-3 border-b border-gray-50"
             >
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-gray-800 truncate">
-                  {m.name}
+              {/* Mobile: stacked info */}
+              <div className="min-w-0 flex-1 md:contents">
+                <div>
+                  <div className="text-xs md:text-sm font-semibold text-gray-800 truncate">
+                    {m.name}
+                  </div>
+                  <div className="text-[10px] text-gray-400 mt-0.5 md:hidden">
+                    {m.phone} · {m.staff_id || "—"}
+                  </div>
+                  <div className="text-[10px] text-gray-400 md:hidden">
+                    {m.total_redemptions} 笔兑换 · {m.company}
+                  </div>
                 </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">
-                  {m.phone} · {m.staff_id || "—"}
+                {/* Desktop-only cells */}
+                <div className="hidden md:block text-xs text-gray-600">
+                  {m.phone}
                 </div>
-                <div className="text-[10px] text-gray-400">
-                  {m.total_redemptions} 笔兑换 · {m.company}
+                <div className="hidden md:block text-xs text-gray-600">
+                  {m.staff_id || "—"}
+                </div>
+                <div className="hidden md:block text-xs text-gray-600">
+                  {m.total_redemptions}
                 </div>
               </div>
-              <div className="ml-2 flex flex-col items-end gap-1">
+              <div className="ml-2 md:ml-0 flex flex-col items-end gap-1 md:justify-self-end">
                 <div
-                  className="text-[11px] font-semibold px-2 py-1 rounded-md"
+                  className="text-[11px] md:text-sm font-semibold px-2 py-1 rounded-md whitespace-nowrap"
                   style={{
                     background: "#dcfce7",
                     color: "#0F6E56",
@@ -96,7 +118,8 @@ export default function MembersTab() {
                 </div>
               </div>
             </div>
-          ))
+          ))}
+          </>
         )}
       </div>
     </div>
