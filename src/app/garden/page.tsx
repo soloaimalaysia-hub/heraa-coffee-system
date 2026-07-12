@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { fetchMe } from "@/lib/session";
 
 interface GardenState {
   day_count: number;
@@ -29,18 +30,18 @@ export default function GardenPage() {
   const [watering, setWatering] = useState(false);
   const [justWatered, setJustWatered] = useState(false);
   const [rewardMsg, setRewardMsg] = useState(false);
+  const [memberId, setMemberId] = useState<string | null>(null);
 
   const loadGarden = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+    const me = await fetchMe();
+    if (!me) {
       router.replace("/login");
       return;
     }
+    setMemberId(me.member.id);
 
     const { data } = await supabase.rpc("heraa_get_garden", {
-      p_member_id: session.user.id,
+      p_member_id: me.member.id,
     });
     if (data) setGarden(data);
     setLoading(false);
@@ -51,14 +52,11 @@ export default function GardenPage() {
   }, [loadGarden]);
 
   async function handleWater() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!memberId) return;
 
     setWatering(true);
     const { data, error } = await supabase.rpc("heraa_water_plant", {
-      p_member_id: session.user.id,
+      p_member_id: memberId,
     });
 
     setWatering(false);

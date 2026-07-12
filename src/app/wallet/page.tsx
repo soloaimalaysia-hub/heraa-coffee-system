@@ -3,26 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-interface Member {
-  id: string;
-  name: string;
-  company: string;
-  staff_id: string;
-}
-
-interface Wallet {
-  balance: number;
-  monthly_allowance: number;
-}
-
-interface Transaction {
-  id: string;
-  amount: number;
-  type: string;
-  description: string;
-  created_at: string;
-}
+import { fetchMe, clearSession, Member, Wallet, Transaction } from "@/lib/session";
 
 const DRINKS = [
   { name: "Heraa Americano", price: 6.5 },
@@ -42,70 +23,14 @@ export default function WalletPage() {
   const [redeeming, setRedeeming] = useState(false);
 
   const loadData = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+    const me = await fetchMe();
+    if (!me) {
       router.replace("/login");
       return;
     }
-
-    const userId = session.user.id;
-    const userName =
-      session.user.user_metadata?.name || session.user.email || "Member";
-    const userStaffId = session.user.user_metadata?.staff_id || "";
-
-    let { data: memberData } = await supabase
-      .from("heraa_members")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (!memberData) {
-      const { data: newMember } = await supabase
-        .from("heraa_members")
-        .insert({
-          id: userId,
-          name: userName,
-          company: "Genting",
-          staff_id: userStaffId,
-          phone: session.user.phone || null,
-        })
-        .select()
-        .single();
-
-      if (newMember) {
-        await supabase.from("heraa_wallets").insert({ member_id: userId });
-
-        await supabase.from("heraa_transactions").insert({
-          member_id: userId,
-          amount: 20,
-          type: "credit",
-          description: "Genting 津贴",
-        });
-
-        memberData = newMember;
-      }
-    }
-
-    if (memberData) setMember(memberData);
-
-    const { data: walletData } = await supabase
-      .from("heraa_wallets")
-      .select("balance, monthly_allowance")
-      .eq("member_id", userId)
-      .single();
-
-    if (walletData) setWallet(walletData);
-
-    const { data: txns } = await supabase
-      .from("heraa_transactions")
-      .select("*")
-      .eq("member_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    if (txns) setTransactions(txns);
+    setMember(me.member);
+    setWallet(me.wallet);
+    setTransactions(me.transactions);
     setLoading(false);
   }, [router]);
 
@@ -129,7 +54,14 @@ export default function WalletPage() {
       return;
     }
 
-    router.push(`/redeem?id=${data.id}&qr=${data.qr_code}&drink=${drinkName}&amount=${price}`);
+    router.push(
+      `/redeem?id=${data.id}&qr=${data.qr_code}&drink=${drinkName}&amount=${price}`
+    );
+  }
+
+  function handleLogout() {
+    clearSession();
+    router.replace("/login");
   }
 
   if (loading) {
@@ -145,20 +77,21 @@ export default function WalletPage() {
     );
   }
 
-  const used = wallet
-    ? wallet.monthly_allowance - wallet.balance
-    : 0;
-  const pct = wallet
-    ? (wallet.balance / wallet.monthly_allowance) * 100
-    : 0;
+  const used = wallet ? wallet.monthly_allowance - wallet.balance : 0;
+  const pct = wallet ? (wallet.balance / wallet.monthly_allowance) * 100 : 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Header */}
       <div
-        className="pt-10 pb-5 text-center"
+        className="pt-10 pb-5 text-center relative"
         style={{ background: "var(--heraa-red)" }}
       >
+        <button
+          onClick={handleLogout}
+          className="absolute top-3 right-3 text-white/70 text-xs px-2 py-1"
+        >
+          退出
+        </button>
         <div className="text-white font-bold text-base tracking-widest">
           HERAA COFFEE
         </div>
@@ -171,9 +104,7 @@ export default function WalletPage() {
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 px-4 py-4">
-        {/* Balance Card */}
         <div
           className="rounded-xl p-4 text-center mb-3"
           style={{
@@ -191,25 +122,20 @@ export default function WalletPage() {
             className="text-3xl font-bold leading-tight my-1"
             style={{ color: "var(--heraa-red)" }}
           >
-            RM {wallet?.balance?.toFixed(2) || "0.00"}
+            RM {Number(wallet?.balance ?? 0).toFixed(2)}
           </div>
           <div className="text-[10px] text-gray-400">
             已用 RM {used.toFixed(2)} / 共 RM{" "}
-            {wallet?.monthly_allowance?.toFixed(2) || "20.00"}
+            {Number(wallet?.monthly_allowance ?? 20).toFixed(2)}
           </div>
-          {/* Progress bar */}
           <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all"
-              style={{
-                width: `${pct}%`,
-                background: "var(--heraa-red)",
-              }}
+              style={{ width: `${pct}%`, background: "var(--heraa-red)" }}
             />
           </div>
         </div>
 
-        {/* Garden Entry */}
         <button
           onClick={() => router.push("/garden")}
           className="w-full rounded-xl p-3 mb-3 flex items-center gap-3 text-left transition-colors hover:bg-green-50"
@@ -227,7 +153,6 @@ export default function WalletPage() {
           <div className="ml-auto text-green-400 text-sm">→</div>
         </button>
 
-        {/* Redeem Button */}
         <button
           onClick={() => setShowMenu(!showMenu)}
           disabled={redeeming || !wallet || wallet.balance <= 0}
@@ -237,7 +162,6 @@ export default function WalletPage() {
           {redeeming ? "处理中..." : "☕ 立即兑换咖啡"}
         </button>
 
-        {/* Drink Menu */}
         {showMenu && (
           <div
             className="rounded-xl mb-3 overflow-hidden"
@@ -262,7 +186,6 @@ export default function WalletPage() {
           </div>
         )}
 
-        {/* Transactions */}
         <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-2">
           消费记录
         </div>
@@ -297,7 +220,7 @@ export default function WalletPage() {
                   color: tx.type === "credit" ? "#1a8a3a" : "var(--heraa-red)",
                 }}
               >
-                {tx.type === "credit" ? "+" : "-"}RM {tx.amount.toFixed(2)}
+                {tx.type === "credit" ? "+" : "-"}RM {Number(tx.amount).toFixed(2)}
               </div>
             </div>
           ))
