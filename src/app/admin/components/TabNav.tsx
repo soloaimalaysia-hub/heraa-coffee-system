@@ -2,7 +2,7 @@
 
 import { useLang } from "@/lib/LanguageContext";
 
-export type TabKey = "analytics" | "simulate" | "whatsapp" | "transactions" | "members";
+export type TabKey = "analytics" | "simulate" | "whatsapp" | "transactions" | "members" | "events";
 
 export default function TabNav({
   active,
@@ -19,6 +19,7 @@ export default function TabNav({
     { key: "whatsapp", label: t.tabWhatsApp, icon: "📱" },
     { key: "transactions", label: t.tabTransactions, icon: "🧾" },
     { key: "members", label: t.tabMembers, icon: "👥" },
+    { key: "events", label: t.tabEvents, icon: "📅" },
   ];
 
   return (

@@ -4,6 +4,7 @@ export interface Member {
   phone: string;
   company: string;
   staff_id: string;
+  referral_code?: string;
 }
 
 export interface Wallet {

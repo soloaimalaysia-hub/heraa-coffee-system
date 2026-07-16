@@ -56,6 +56,10 @@ export default function ScreenPage() {
   useEffect(() => {
     loadInitialData();
 
+    // Polling fallback: RLS blocks anon realtime on heraa_transactions,
+    // so refresh via SECURITY DEFINER RPCs every 5s to guarantee updates.
+    const poll = setInterval(loadInitialData, 3000);
+
     const channel = supabase
       .channel("heraa-screen")
       .on(
@@ -109,6 +113,7 @@ export default function ScreenPage() {
       .subscribe();
 
     return () => {
+      clearInterval(poll);
       supabase.removeChannel(channel);
     };
   }, [loadInitialData]);

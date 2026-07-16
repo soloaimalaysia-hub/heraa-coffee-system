@@ -9,6 +9,7 @@ import SimulateTab from "./components/SimulateTab";
 import WhatsAppTab from "./components/WhatsAppTab";
 import TransactionsTab from "./components/TransactionsTab";
 import MembersTab from "./components/MembersTab";
+import EventsTab from "./components/EventsTab";
 
 function AdminContent() {
   const searchParams = useSearchParams();
@@ -21,7 +22,7 @@ function AdminContent() {
         <div className="text-center">
           <div className="text-4xl mb-4">🔒</div>
           <div className="text-sm text-gray-400">
-            Access denied. Add ?key=heraa2026 to URL.
+            Access denied.
           </div>
         </div>
       </div>
@@ -48,6 +49,9 @@ function AdminContent() {
         </div>
         <div style={{ display: tab === "members" ? "block" : "none" }}>
           <MembersTab />
+        </div>
+        <div style={{ display: tab === "events" ? "block" : "none" }}>
+          <EventsTab />
         </div>
       </div>
     </div>

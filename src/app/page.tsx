@@ -9,7 +9,7 @@ export default function Home() {
 
   useEffect(() => {
     const token = getSessionToken();
-    router.replace(token ? "/wallet" : "/login");
+    router.replace(token ? "/home" : "/login");
   }, [router]);
 
   return (

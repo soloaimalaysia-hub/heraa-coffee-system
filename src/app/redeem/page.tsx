@@ -3,56 +3,66 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
+import { supabase } from "@/lib/supabase";
 import { useLang } from "@/lib/LanguageContext";
 
 function RedeemContent() {
   const { t } = useLang();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const redemptionId = searchParams.get("id") || "";
   const qrCode = searchParams.get("qr") || "";
   const drinkName = searchParams.get("drink") || "";
   const amount = searchParams.get("amount") || "0";
 
   const [timeLeft, setTimeLeft] = useState(300);
   const [expired, setExpired] = useState(false);
+  const [refunded, setRefunded] = useState(false);
+  const [refundAmount, setRefundAmount] = useState(0);
 
   useEffect(() => {
-    if (timeLeft <= 0) {
+    if (timeLeft <= 0 && !expired) {
       setExpired(true);
+      if (redemptionId && parseFloat(amount) > 0) {
+        supabase
+          .rpc("heraa_expire_redemption", { p_redemption_id: redemptionId })
+          .then(({ data }) => {
+            if (data?.refunded) {
+              setRefunded(true);
+              setRefundAmount(data.amount || 0);
+            }
+          });
+      }
       return;
     }
+    if (expired) return;
     const timer = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) {
-          setExpired(true);
-          return 0;
-        }
+        if (t <= 1) return 0;
         return t - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, expired, redemptionId, amount]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Header */}
       <div
-        className="py-6 text-center"
+        className="py-8 text-center"
         style={{ background: "var(--heraa-red)" }}
       >
-        <div className="text-white font-bold text-base tracking-widest">
+        <div className="text-white font-bold text-lg tracking-widest">
           HERAA COFFEE
         </div>
-        <div className="text-white/70 text-[10px] mt-0.5">{t.redeemTitle}</div>
+        <div className="text-white/70 text-xs mt-1">{t.redeemTitle}</div>
       </div>
 
-      {/* QR Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div
-          className={`rounded-2xl p-6 mb-4 transition-opacity ${
+          className={`rounded-2xl p-8 mb-5 transition-opacity ${
             expired ? "opacity-40" : ""
           }`}
           style={{
@@ -62,44 +72,57 @@ function RedeemContent() {
         >
           <QRCodeSVG
             value={qrCode}
-            size={200}
+            size={220}
             level="H"
             fgColor={expired ? "#ccc" : "#1a1a1a"}
             bgColor="transparent"
           />
         </div>
 
-        {/* Drink info */}
-        <div className="text-center mb-4">
-          <div className="text-base font-bold text-gray-800">{drinkName}</div>
+        <div className="text-center mb-5">
+          <div className="text-lg font-bold text-gray-800">{drinkName}</div>
           <div
-            className="text-lg font-bold mt-0.5"
+            className="text-xl font-bold mt-1"
             style={{ color: "var(--heraa-red)" }}
           >
             RM {parseFloat(amount).toFixed(2)}
           </div>
         </div>
 
-        {/* Countdown */}
         {expired ? (
           <div className="text-center">
-            <div className="text-sm font-semibold text-gray-400 mb-1">
+            <div className="text-base font-semibold text-gray-400 mb-1">
               {t.redeemExpired}
             </div>
-            <div className="text-[10px] text-gray-300">
-              {t.redeemExpiredSub}
-            </div>
+            {refunded ? (
+              <div className="rounded-xl px-5 py-4 mt-3 text-center bg-green-50 border border-green-200">
+                <div className="text-base font-bold text-green-700">
+                  {t.redeemRefunded}
+                </div>
+                <div className="text-sm text-green-500 mt-1">
+                  RM {refundAmount.toFixed(2)} {t.redeemRefundedSub}
+                </div>
+              </div>
+            ) : parseFloat(amount) === 0 ? (
+              <div className="text-xs text-gray-300">
+                {t.redeemExpiredSub}
+              </div>
+            ) : (
+              <div className="text-xs text-gray-300">
+                {t.redeemExpiredSub}
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center">
-            <div className="text-xs text-gray-400 mb-1">{t.redeemValidTime}</div>
+            <div className="text-sm text-gray-400 mb-1">{t.redeemValidTime}</div>
             <div
-              className="text-2xl font-bold font-mono"
-              style={{ color: "var(--heraa-red)" }}
+              className="font-bold font-mono"
+              style={{ color: "var(--heraa-red)", fontSize: 36 }}
             >
               {minutes}:{seconds.toString().padStart(2, "0")}
             </div>
-            <div className="mt-2 w-48 h-1.5 bg-gray-200 rounded-full overflow-hidden mx-auto">
+            <div className="mt-3 w-52 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
@@ -112,13 +135,13 @@ function RedeemContent() {
           </div>
         )}
 
-        {/* Back button */}
         <button
           onClick={() => router.push("/wallet")}
-          className="mt-8 px-8 py-3 rounded-xl text-sm font-semibold border transition-colors"
+          className="mt-8 px-10 rounded-xl text-base font-bold border transition-colors"
           style={{
             borderColor: "var(--heraa-red)",
             color: "var(--heraa-red)",
+            height: 52,
           }}
         >
           {t.redeemBack}
@@ -134,10 +157,10 @@ export default function RedeemPage() {
       fallback={
         <div className="min-h-screen flex items-center justify-center">
           <div
-            className="animate-pulse font-bold"
+            className="animate-pulse font-bold text-lg"
             style={{ color: "var(--heraa-red)" }}
           >
-            ...
+            HERAA COFFEE
           </div>
         </div>
       }

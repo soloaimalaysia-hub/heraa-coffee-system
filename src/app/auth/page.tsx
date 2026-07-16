@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/track";
 import { useLang } from "@/lib/LanguageContext";
 
@@ -31,7 +32,23 @@ function AuthContent() {
         localStorage.setItem("heraa_session", data.session_token);
         localStorage.setItem("heraa_member_id", data.member_id);
         track("login_success", data.member_id);
-        router.replace("/wallet");
+
+        supabase.rpc("heraa_grant_welcome_voucher", {
+          p_member_id: data.member_id,
+        }).then(() => {});
+
+        const refCode = localStorage.getItem("heraa_ref_code");
+        if (refCode) {
+          localStorage.removeItem("heraa_ref_code");
+          supabase.rpc("heraa_claim_referral", {
+            p_referee_id: data.member_id,
+            p_referral_code: refCode,
+          }).then(() => {
+            track("referral_auto_claimed", data.member_id, { code: refCode });
+          });
+        }
+
+        router.replace("/home");
       } catch (err: unknown) {
         setError((err as Error).message);
       }

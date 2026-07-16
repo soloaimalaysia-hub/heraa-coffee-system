@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { track } from "@/lib/track";
 import { useLang } from "@/lib/LanguageContext";
 
-export default function LoginPage() {
+function LoginContent() {
   const { t, lang, toggleLang } = useLang();
+  const searchParams = useSearchParams();
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [staffId, setStaffId] = useState("");
@@ -16,7 +18,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     track("app_open");
-  }, []);
+    const ref = searchParams.get("ref");
+    if (ref) {
+      localStorage.setItem("heraa_ref_code", ref.toUpperCase());
+    }
+  }, [searchParams]);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -64,14 +70,14 @@ export default function LoginPage() {
           <div className="text-white/70 text-xs mt-1">{t.walletTitle}</div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <div className="text-5xl mb-4">📱</div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">
+          <div className="text-6xl mb-5">📱</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-3">
             {t.loginSent}
           </h2>
           <p className="text-sm text-gray-500 text-center leading-relaxed">
             {t.loginSentSub}
             <br />
-            <span className="font-semibold text-gray-700">{phone}</span>
+            <span className="font-semibold text-gray-700 text-base">{phone}</span>
             <br />
             <br />
             {t.loginSentValid} <span style={{ color: "#C8111A" }} className="font-bold">{t.loginSentValidMin}</span> {t.loginSentValidAfter}
@@ -96,7 +102,7 @@ export default function LoginPage() {
       <div className="py-8 text-center relative" style={{ background: "#C8111A" }}>
         <button
           onClick={toggleLang}
-          className="absolute top-3 right-3 text-white text-xs font-medium rounded px-2.5 py-1 border"
+          className="absolute top-3 right-3 text-white text-sm font-medium rounded px-3 py-1.5 border"
           style={{
             background: "rgba(255,255,255,0.15)",
             borderColor: "rgba(255,255,255,0.3)",
@@ -111,14 +117,14 @@ export default function LoginPage() {
       </div>
 
       <div className="flex-1 px-6 py-8">
-        <h2 className="text-lg font-bold text-gray-800 mb-1">{t.loginTitle}</h2>
-        <p className="text-xs text-gray-400 mb-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">{t.loginTitle}</h2>
+        <p className="text-sm text-gray-400 mb-6">
           {showInfo ? t.loginSubInfo : t.loginSubPhone}
         </p>
 
-        <form onSubmit={handleSend} className="space-y-4">
+        <form onSubmit={handleSend} className="space-y-5">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="block text-sm font-medium text-gray-500 mb-1.5">
               {t.loginPhone}
             </label>
             <input
@@ -128,7 +134,7 @@ export default function LoginPage() {
               placeholder={t.loginPhonePlaceholder}
               required
               disabled={showInfo}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 disabled:bg-gray-50"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 disabled:bg-gray-50"
               style={{ "--tw-ring-color": "#C8111A" } as React.CSSProperties}
             />
           </div>
@@ -136,7 +142,7 @@ export default function LoginPage() {
           {showInfo && (
             <>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
+                <label className="block text-sm font-medium text-gray-500 mb-1.5">
                   {t.loginName}
                 </label>
                 <input
@@ -145,14 +151,14 @@ export default function LoginPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t.loginNamePlaceholder}
                   required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
                   style={
                     { "--tw-ring-color": "#C8111A" } as React.CSSProperties
                   }
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
+                <label className="block text-sm font-medium text-gray-500 mb-1.5">
                   {t.loginStaffId}
                 </label>
                 <input
@@ -161,14 +167,14 @@ export default function LoginPage() {
                   onChange={(e) => setStaffId(e.target.value)}
                   placeholder={t.loginStaffPlaceholder}
                   required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
                   style={
                     { "--tw-ring-color": "#C8111A" } as React.CSSProperties
                   }
                 />
               </div>
               <div
-                className="text-[10px] text-gray-400 rounded-lg p-2"
+                className="text-xs text-gray-400 rounded-lg p-3"
                 style={{ background: "#FFF3F3" }}
               >
                 {t.loginWalletHint}
@@ -177,7 +183,7 @@ export default function LoginPage() {
           )}
 
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">
+            <p className="text-sm text-red-500 bg-red-50 rounded-lg px-4 py-3">
               {error}
             </p>
           )}
@@ -185,8 +191,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-white font-semibold rounded-xl py-3 text-sm disabled:opacity-50 transition-opacity"
-            style={{ background: "#C8111A" }}
+            className="w-full text-white font-bold rounded-xl text-lg disabled:opacity-50 transition-opacity"
+            style={{ background: "#C8111A", height: 58 }}
           >
             {loading
               ? t.loginBtnSending
@@ -196,12 +202,28 @@ export default function LoginPage() {
           </button>
 
           {!showInfo && (
-            <p className="text-[10px] text-center text-gray-400 mt-3">
-              {t.loginSandboxHint} <code className="bg-gray-100 px-1 rounded">join doctor-through</code> {t.loginSandboxTarget}
+            <p className="text-xs text-center text-gray-400 mt-3">
+              {t.loginSandboxHint} <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">join doctor-through</code> {t.loginSandboxTarget}
             </p>
           )}
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse font-bold text-lg" style={{ color: "#C8111A" }}>
+            HERAA COFFEE
+          </div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

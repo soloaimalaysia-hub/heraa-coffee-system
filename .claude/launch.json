@@ -6,7 +6,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
-      "cwd": "C:\\Users\\Smart Rental\\Desktop\\Out Source Job\\heraa-coffee-system"
+      "cwd": "C:\\heraa-coffee-system"
     }
   ]
 }
