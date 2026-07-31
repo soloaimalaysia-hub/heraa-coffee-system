@@ -27,5 +27,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     session_token: data.session_token,
     member_id: data.member_id,
+    member_type: data.member_type || "public",
   });
 }

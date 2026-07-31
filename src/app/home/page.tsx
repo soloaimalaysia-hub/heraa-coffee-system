@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { fetchMe, Member, Wallet, Transaction } from "@/lib/session";
+import { fetchMe, Member, Wallet, Transaction, CompanyInfo } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/track";
 import { useLang } from "@/lib/LanguageContext";
@@ -15,12 +15,25 @@ function getGreeting(t: Record<string, string>) {
   return t.homeGreetEvening;
 }
 
+function getNextAllowanceDate(companyInfo: CompanyInfo | null | undefined): string {
+  if (!companyInfo) return "";
+  const now = new Date();
+  if (companyInfo.allowance_cycle === "monthly") {
+    const resetDay = companyInfo.allowance_reset_day || 1;
+    let next = new Date(now.getFullYear(), now.getMonth(), resetDay);
+    if (next <= now) next = new Date(now.getFullYear(), now.getMonth() + 1, resetDay);
+    return `${next.getMonth() + 1}月${next.getDate()}日`;
+  }
+  return "";
+}
+
 export default function HomePage() {
   const { t, lang, toggleLang } = useLang();
   const router = useRouter();
   const [member, setMember] = useState<Member | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -32,6 +45,7 @@ export default function HomePage() {
     setMember(me.member);
     setWallet(me.wallet);
     setTransactions(me.transactions.slice(0, 3));
+    setCompanyInfo(me.company_info || null);
     setLoading(false);
     track("home_viewed", me.member.id);
 
@@ -58,12 +72,17 @@ export default function HomePage() {
 
   const balance = Number(wallet?.balance ?? 0);
   const cups = Math.floor(balance / 6.5);
-  const used = wallet ? wallet.monthly_allowance - balance : 0;
-  const pct = wallet ? (balance / wallet.monthly_allowance) * 100 : 0;
+  const isCorporate = member?.member_type === "corporate";
+  const monthlyAllowance = Number(wallet?.monthly_allowance ?? 0);
+  const pct = monthlyAllowance > 0 ? (balance / monthlyAllowance) * 100 : 0;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tAny = t as any;
   const greeting = getGreeting(tAny);
+
+  const memberLabel = isCorporate
+    ? `${member?.name} · ${companyInfo?.name || ""} ${lang === "zh" ? "员工" : "Staff"}`
+    : `${member?.name}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pb-20">
@@ -89,36 +108,72 @@ export default function HomePage() {
         <div className="text-white text-lg font-semibold mt-4">
           {greeting}, {member?.name} ☕
         </div>
+        <div className="text-white/60 text-xs mt-1">
+          {isCorporate
+            ? `🏢 ${companyInfo?.name || ""} · ${lang === "zh" ? "员工" : "Staff"}`
+            : `☕ ${lang === "zh" ? "会员" : "Member"}`}
+        </div>
       </div>
 
       {/* Content */}
       <div className="px-4 -mt-3">
         {/* Coffee Credits Card */}
-        <div
-          className="rounded-2xl p-5 mb-4 shadow-sm"
-          style={{ background: "#FFF5F5", border: "1px solid #FFD0D0" }}
-        >
-          <div className="text-xs font-semibold tracking-wide mb-1" style={{ color: "#C8111A" }}>
-            {t.homeCoffeeCredits}
+        {isCorporate ? (
+          <div
+            className="rounded-2xl p-5 mb-4 shadow-sm"
+            style={{ background: "#FFF5F5", border: "1px solid #FFD0D0" }}
+          >
+            <div className="text-xs font-semibold tracking-wide mb-1" style={{ color: "#C8111A" }}>
+              {lang === "zh" ? "我的余额" : "My Balance"}
+            </div>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="font-bold" style={{ fontSize: 42, color: "#C8111A", lineHeight: 1 }}>
+                RM {balance.toFixed(2)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-400 mb-2">
+              {lang === "zh" ? "约" : "≈"} {cups} {lang === "zh" ? "杯" : "cups"}
+            </div>
+            <div className="h-2 bg-white rounded-full overflow-hidden mb-2">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${Math.min(pct, 100)}%`, background: "#C8111A" }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>
+                {lang === "zh" ? "本月津贴" : "Monthly allowance"} RM{monthlyAllowance.toFixed(0)}
+              </span>
+              <span>
+                {lang === "zh" ? "下次发放" : "Next"}: {getNextAllowanceDate(companyInfo)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-end gap-2 mb-1">
-            <span className="font-bold" style={{ fontSize: 48, color: "#C8111A", lineHeight: 1 }}>
-              {cups}
-            </span>
-            <span className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
-              {t.homeCupsRemaining}
-            </span>
+        ) : (
+          <div
+            className="rounded-2xl p-5 mb-4 shadow-sm"
+            style={{ background: "#FFF5F5", border: "1px solid #FFD0D0" }}
+          >
+            <div className="text-xs font-semibold tracking-wide mb-1" style={{ color: "#C8111A" }}>
+              {lang === "zh" ? "我的余额" : "My Balance"}
+            </div>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="font-bold" style={{ fontSize: 42, color: "#C8111A", lineHeight: 1 }}>
+                RM {balance.toFixed(2)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-400 mb-3">
+              {lang === "zh" ? "约" : "≈"} {cups} {lang === "zh" ? "杯" : "cups"}
+            </div>
+            <button
+              onClick={() => router.push("/packages")}
+              className="w-full text-center py-2.5 rounded-xl text-sm font-bold text-white"
+              style={{ background: "#C8111A" }}
+            >
+              💳 {lang === "zh" ? "立即充值" : "Top Up Now"}
+            </button>
           </div>
-          <div className="text-xs text-gray-400 mb-2">
-            RM {balance.toFixed(2)} / RM {Number(wallet?.monthly_allowance ?? 20).toFixed(2)}
-          </div>
-          <div className="h-2 bg-white rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: `${pct}%`, background: "#C8111A" }}
-            />
-          </div>
-        </div>
+        )}
 
         {/* Active Package */}
         <button
@@ -134,7 +189,7 @@ export default function HomePage() {
         </button>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-4 gap-3 mb-5">
           <button
             onClick={() => router.push("/wallet")}
             className="rounded-xl p-4 flex flex-col items-center gap-2 bg-white"
@@ -146,13 +201,25 @@ export default function HomePage() {
             </span>
           </button>
           <button
+            onClick={() => router.push("/garden")}
+            className="rounded-xl p-4 flex flex-col items-center gap-2 bg-white"
+            style={{ border: "1px solid #F0F0F0" }}
+          >
+            <span className="text-2xl">🌱</span>
+            <span className="text-xs font-medium text-gray-600 text-center">
+              {lang === "zh" ? "浇水" : "Water"}
+            </span>
+          </button>
+          <button
             onClick={() => router.push("/packages")}
             className="rounded-xl p-4 flex flex-col items-center gap-2 bg-white"
             style={{ border: "1px solid #F0F0F0" }}
           >
-            <span className="text-2xl">📦</span>
+            <span className="text-2xl">{isCorporate ? "💳" : "📦"}</span>
             <span className="text-xs font-medium text-gray-600 text-center">
-              {t.homeBuyPackage}
+              {isCorporate
+                ? (lang === "zh" ? "额外充值" : "Top Up")
+                : t.homeBuyPackage}
             </span>
           </button>
           <button

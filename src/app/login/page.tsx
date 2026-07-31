@@ -1,101 +1,98 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { formatPhone } from "@/lib/phone";
 import { track } from "@/lib/track";
 import { useLang } from "@/lib/LanguageContext";
 
 function LoginContent() {
   const { t, lang, toggleLang } = useLang();
-  const searchParams = useSearchParams();
+  const router = useRouter();
   const [phone, setPhone] = useState("");
-  const [name, setName] = useState("");
-  const [staffId, setStaffId] = useState("");
-  const [showInfo, setShowInfo] = useState(false);
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [notActivated, setNotActivated] = useState(false);
+  const [notActivatedMemberId, setNotActivatedMemberId] = useState("");
+  const [resending, setResending] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
-  useEffect(() => {
-    track("app_open");
-    const ref = searchParams.get("ref");
-    if (ref) {
-      localStorage.setItem("heraa_ref_code", ref.toUpperCase());
-    }
-  }, [searchParams]);
-
-  async function handleSend(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setNotActivated(false);
+
+    const { data, error: rpcErr } = await supabase.rpc("heraa_login_password", {
+      p_phone: phone.trim(),
+      p_password: password,
+    });
+
+    setLoading(false);
+
+    if (rpcErr) {
+      setError(rpcErr.message);
+      return;
+    }
+
+    if (!data.success) {
+      if (data.error === "not_activated") {
+        setNotActivated(true);
+        setNotActivatedMemberId(data.member_id || "");
+        return;
+      }
+      setError(data.error);
+      return;
+    }
+
+    localStorage.setItem("heraa_session", data.session_token);
+    localStorage.setItem("heraa_member_id", data.member_id);
+    track("login_success", data.member_id);
+
+    supabase.rpc("heraa_grant_welcome_voucher", {
+      p_member_id: data.member_id,
+    }).then(() => {});
+
+    const refCode = localStorage.getItem("heraa_ref_code");
+    if (refCode) {
+      localStorage.removeItem("heraa_ref_code");
+      supabase.rpc("heraa_claim_referral", {
+        p_referee_id: data.member_id,
+        p_referral_code: refCode,
+      }).then(() => {
+        track("referral_auto_claimed", data.member_id, { code: refCode });
+      });
+    }
+
+    router.replace("/home");
+  }
+
+  async function handleResendActivation() {
+    if (!phone.trim()) return;
+    setResending(true);
+    setLinkSent(false);
 
     try {
       const res = await fetch("/api/auth/send-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, name, staff_id: staffId }),
+        body: JSON.stringify({ phone: phone.trim(), name: "", staff_id: "" }),
       });
       const data = await res.json();
-
-      if (data.needs_info) {
-        setShowInfo(true);
-        setLoading(false);
-        return;
-      }
-
-      if (!res.ok) {
+      if (res.ok || data.needs_info) {
+        setLinkSent(true);
+      } else {
         setError(data.error || "发送失败");
-        setLoading(false);
-        return;
       }
-
-      track("login_initiated", null, { phone });
-      setSent(true);
     } catch (err: unknown) {
       setError((err as Error).message);
     }
-    setLoading(false);
+    setResending(false);
   }
 
-  if (sent) {
-    return (
-      <div className="min-h-screen flex flex-col bg-white">
-        <div
-          className="py-8 text-center"
-          style={{ background: "#C8111A" }}
-        >
-          <div className="text-white font-bold text-lg tracking-wider">
-            HERAA COFFEE
-          </div>
-          <div className="text-white/70 text-xs mt-1">{t.walletTitle}</div>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <div className="text-6xl mb-5">📱</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-3">
-            {t.loginSent}
-          </h2>
-          <p className="text-sm text-gray-500 text-center leading-relaxed">
-            {t.loginSentSub}
-            <br />
-            <span className="font-semibold text-gray-700 text-base">{phone}</span>
-            <br />
-            <br />
-            {t.loginSentValid} <span style={{ color: "#C8111A" }} className="font-bold">{t.loginSentValidMin}</span> {t.loginSentValidAfter}
-          </p>
-          <button
-            onClick={() => {
-              setSent(false);
-              setShowInfo(false);
-            }}
-            className="mt-8 text-sm font-medium"
-            style={{ color: "#C8111A" }}
-          >
-            {t.loginBackReset}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const normalizedPhone = phone.trim().length >= 4 ? formatPhone(phone.trim()) : "";
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -119,10 +116,13 @@ function LoginContent() {
       <div className="flex-1 px-6 py-8">
         <h2 className="text-xl font-bold text-gray-800 mb-2">{t.loginTitle}</h2>
         <p className="text-sm text-gray-400 mb-6">
-          {showInfo ? t.loginSubInfo : t.loginSubPhone}
+          {lang === "zh"
+            ? "手机号 + 密码登入"
+            : "Login with phone number & password"}
         </p>
 
-        <form onSubmit={handleSend} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Phone */}
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-1.5">
               {t.loginPhone}
@@ -133,80 +133,102 @@ function LoginContent() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t.loginPhonePlaceholder}
               required
-              disabled={showInfo}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 disabled:bg-gray-50"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
+              style={{ "--tw-ring-color": "#C8111A" } as React.CSSProperties}
+            />
+            {normalizedPhone && (
+              <p className="text-xs mt-1.5 font-medium" style={{ color: "#C8111A" }}>
+                {lang === "zh" ? "将识别为" : "Recognized as"}: <span className="font-bold">{normalizedPhone}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-500 mb-1.5">
+              {t.loginPassword}
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t.loginPasswordPlaceholder}
+              required
+              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
               style={{ "--tw-ring-color": "#C8111A" } as React.CSSProperties}
             />
           </div>
 
-          {showInfo && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1.5">
-                  {t.loginName}
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t.loginNamePlaceholder}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
-                  style={
-                    { "--tw-ring-color": "#C8111A" } as React.CSSProperties
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1.5">
-                  {t.loginStaffId}
-                </label>
-                <input
-                  type="text"
-                  value={staffId}
-                  onChange={(e) => setStaffId(e.target.value)}
-                  placeholder={t.loginStaffPlaceholder}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:ring-2"
-                  style={
-                    { "--tw-ring-color": "#C8111A" } as React.CSSProperties
-                  }
-                />
-              </div>
-              <div
-                className="text-xs text-gray-400 rounded-lg p-3"
-                style={{ background: "#FFF3F3" }}
-              >
-                {t.loginWalletHint}
-              </div>
-            </>
-          )}
-
+          {/* Error */}
           {error && (
             <p className="text-sm text-red-500 bg-red-50 rounded-lg px-4 py-3">
               {error}
             </p>
           )}
 
+          {/* Not Activated */}
+          {notActivated && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
+              <p className="text-sm text-yellow-700 font-medium mb-2">
+                {t.loginNotActivated}
+              </p>
+              {linkSent ? (
+                <p className="text-sm text-green-600 font-medium">
+                  ✅ {t.loginLinkSent}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendActivation}
+                  disabled={resending}
+                  className="text-sm font-semibold disabled:opacity-50"
+                  style={{ color: "#C8111A" }}
+                >
+                  {resending
+                    ? (lang === "zh" ? "发送中..." : "Sending...")
+                    : `📱 ${t.loginResendLink}`}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Login Button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full text-white font-bold rounded-xl text-lg disabled:opacity-50 transition-opacity"
             style={{ background: "#C8111A", height: 58 }}
           >
-            {loading
-              ? t.loginBtnSending
-              : showInfo
-              ? t.loginBtnSubmit
-              : t.loginBtn}
+            {loading ? t.loginBtnLoading : t.loginBtn}
           </button>
-
-          {!showInfo && (
-            <p className="text-xs text-center text-gray-400 mt-3">
-              {t.loginSandboxHint} <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">join doctor-through</code> {t.loginSandboxTarget}
-            </p>
-          )}
         </form>
+
+        {/* Forgot Password */}
+        <div className="text-center mt-4">
+          <button
+            onClick={() => router.push("/forgot-password")}
+            className="text-sm font-medium"
+            style={{ color: "#C8111A" }}
+          >
+            {t.loginForgot}
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-xs text-gray-400">{t.loginRegisterHint}</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        {/* Register */}
+        <button
+          onClick={() => router.push("/register")}
+          className="w-full font-semibold rounded-xl text-sm border transition-colors"
+          style={{ borderColor: "#C8111A", color: "#C8111A", height: 48 }}
+        >
+          {t.loginRegisterBtn}
+        </button>
       </div>
     </div>
   );

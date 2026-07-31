@@ -10,6 +10,7 @@ import WhatsAppTab from "./components/WhatsAppTab";
 import TransactionsTab from "./components/TransactionsTab";
 import MembersTab from "./components/MembersTab";
 import EventsTab from "./components/EventsTab";
+import CompaniesTab from "./components/CompaniesTab";
 
 function AdminContent() {
   const searchParams = useSearchParams();
@@ -30,11 +31,11 @@ function AdminContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "#F6F3EE" }}>
       <TopBar />
       <TabNav active={tab} onChange={setTab} />
 
-      <div className="p-4 md:p-6 max-w-full md:max-w-6xl mx-auto">
+      <div style={{ padding: "18px 18px 28px" }} className="max-w-full md:max-w-6xl mx-auto">
         <div style={{ display: tab === "analytics" ? "block" : "none" }}>
           <AnalyticsTab />
         </div>
@@ -52,6 +53,9 @@ function AdminContent() {
         </div>
         <div style={{ display: tab === "events" ? "block" : "none" }}>
           <EventsTab />
+        </div>
+        <div style={{ display: tab === "companies" ? "block" : "none" }}>
+          <CompaniesTab />
         </div>
       </div>
     </div>

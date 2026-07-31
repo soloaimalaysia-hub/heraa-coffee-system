@@ -5,11 +5,20 @@ export interface Member {
   company: string;
   staff_id: string;
   referral_code?: string;
+  member_type: "public" | "corporate";
+  company_id?: string;
 }
 
 export interface Wallet {
   balance: number;
   monthly_allowance: number;
+  allowance_last_reset?: string;
+}
+
+export interface CompanyInfo {
+  name: string;
+  allowance_cycle: string;
+  allowance_reset_day: number;
 }
 
 export interface Transaction {
@@ -24,6 +33,7 @@ export interface MeResponse {
   member: Member;
   wallet: Wallet;
   transactions: Transaction[];
+  company_info?: CompanyInfo;
 }
 
 export function getSessionToken(): string | null {

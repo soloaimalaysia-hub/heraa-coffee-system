@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   }
 
   const displayName = upsertResult.name || name || "会员";
-  const link = `https://heraa-coffee-system.vercel.app/auth?token=${token}`;
+  const link = `https://heraa-coffee-system.vercel.app/activate?token=${token}`;
   const msg =
     `☕ *Heraa Coffee* · Member Wallet\n\n` +
     `你好 ${displayName}！\n\n` +

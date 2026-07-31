@@ -68,10 +68,10 @@ export default function EventsTab() {
   async function handleCreateEvent(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
-    const { error } = await supabase.from("heraa_events_list").insert({
-      name: newName.trim(),
-      date: newDate,
-      location: newLocation.trim(),
+    const { error } = await supabase.rpc("heraa_admin_create_event", {
+      p_name: newName.trim(),
+      p_date: newDate,
+      p_location: newLocation.trim(),
     });
     if (!error) {
       setShowCreate(false);

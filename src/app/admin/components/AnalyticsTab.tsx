@@ -55,12 +55,13 @@ function downloadCSV(filename: string, csv: string) {
 }
 
 export default function AnalyticsTab() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [funnel, setFunnel] = useState<Funnel | null>(null);
   const [gami, setGami] = useState<Gamification | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState("");
+  const [showWaterModal, setShowWaterModal] = useState(false);
 
   const load = useCallback(async () => {
     const [ov, fn, gm] = await Promise.all([
@@ -76,8 +77,8 @@ export default function AnalyticsTab() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 30000);
-    return () => clearInterval(t);
+    const timer = setInterval(load, 30000);
+    return () => clearInterval(timer);
   }, [load]);
 
   async function exportUsers() {
@@ -127,52 +128,120 @@ export default function AnalyticsTab() {
     : [];
   const funnelMax = Math.max(1, ...funnelSteps.map((s) => s.value));
 
+  if (loading) {
+    return (
+      <div className="text-center py-12" style={{ color: "#A6A29B" }}>
+        {lang === "zh" ? "加载中..." : "Loading..."}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3 md:space-y-4">
-      {/* KPI Grid */}
-      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
-        <div className="flex items-center justify-between mb-3 md:mb-4">
-          <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            📊 {t.analyticsTitle}
-          </div>
-          <button
-            onClick={load}
-            className="text-[10px] md:text-xs text-gray-400 hover:text-gray-600"
-            disabled={loading}
+    <div className="space-y-4">
+      {/* ===== Analytics Card (gold border) ===== */}
+      <div
+        style={{
+          border: "2px solid #D4AF37",
+          borderRadius: 18,
+          padding: "16px 16px 4px",
+          background: "#fff",
+        }}
+      >
+        {/* Section title */}
+        <div className="flex items-center justify-between" style={{ marginBottom: 14 }}>
+          <h2
+            className="flex items-center gap-1.5"
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#C8102E",
+              textTransform: "uppercase",
+              letterSpacing: "0.3px",
+              margin: 0,
+            }}
           >
-            🔄 {t.refresh}
-          </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/icons/section-analytics.webp"
+              alt=""
+              style={{ width: 17, height: 17 }}
+            />
+            {t.analyticsTitle} · Last 30 days
+          </h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/icons/refresh.webp"
+            alt="Refresh"
+            onClick={load}
+            style={{
+              width: 18,
+              height: 18,
+              cursor: "pointer",
+              transition: "transform 0.15s ease",
+            }}
+            onMouseDown={(e) => {
+              (e.target as HTMLElement).style.transform = "rotate(90deg)";
+            }}
+            onMouseUp={(e) => {
+              setTimeout(() => {
+                (e.target as HTMLElement).style.transform = "none";
+              }, 200);
+            }}
+          />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <Kpi
+
+        {/* KPI Grid — red solid cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          <MetricCard
             label={t.totalMembers}
-            value={overview?.total_members ?? 0}
-            sub={`+${overview?.new_members ?? 0} ${t.newMembers}`}
+            value={String(overview?.total_members ?? 0)}
+            delta={`+${overview?.new_members ?? 0} new`}
           />
-          <Kpi
+          <MetricCard
             label={t.todayActive}
-            value={overview?.dau ?? 0}
-            sub={`${t.dayAvg} ${overview?.dau_7d_avg ?? 0}`}
+            value={String(overview?.dau ?? 0)}
+            delta={`7-day avg ${overview?.dau_7d_avg ?? 0}`}
           />
-          <Kpi
+          <MetricCard
             label={t.revenue30d}
             value={`RM ${Number(overview?.total_revenue ?? 0).toFixed(0)}`}
-            sub={`${overview?.total_redemptions ?? 0} ${t.redemptions}`}
+            delta={`${overview?.total_redemptions ?? 0} redemptions`}
           />
-          <Kpi
+          <MetricCard
             label={t.gameParticipants}
-            value={gami?.total_garden_users ?? 0}
-            sub={`${overview?.watering_rate ?? 0}% ${t.todayWatering}`}
+            value={String(gami?.total_garden_users ?? 0)}
+            delta={`${overview?.watering_rate ?? 0}% watered today`}
           />
         </div>
       </div>
 
-      {/* Funnel + Gamification side-by-side on desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
-        <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          {t.funnelTitle}
-        </div>
+      {/* ===== User Funnel (gold border) ===== */}
+      <div
+        style={{
+          border: "2px solid #D4AF37",
+          borderRadius: 16,
+          padding: 16,
+          background: "#fff",
+        }}
+      >
+        <h3
+          style={{
+            color: "#C8102E",
+            fontSize: 13,
+            fontWeight: 700,
+            marginBottom: 14,
+            marginTop: 0,
+          }}
+        >
+          {t.funnelTitle} · Last 7 days
+        </h3>
         {funnelSteps.map((step, i) => {
           const pct = funnelMax > 0 ? (step.value / funnelMax) * 100 : 0;
           const conv =
@@ -180,22 +249,37 @@ export default function AnalyticsTab() {
               ? null
               : ((step.value / funnelSteps[i - 1].value) * 100).toFixed(0);
           return (
-            <div key={step.label} className="mb-2">
-              <div className="flex justify-between text-[11px] mb-1">
-                <span className="text-gray-600">{step.label}</span>
-                <span className="font-semibold" style={{ color: "#C8111A" }}>
-                  {step.value}
+            <div key={step.label} style={{ marginBottom: 12 }}>
+              <div
+                className="flex justify-between"
+                style={{ fontSize: 12, color: "#1A1A1A", marginBottom: 6 }}
+              >
+                <span style={{ color: "#C8102E", fontWeight: 300 }}>
+                  {step.label}
                   {conv !== null && (
-                    <span className="text-gray-400 ml-1 text-[10px]">
+                    <span style={{ color: "#A6A29B", fontWeight: 300, marginLeft: 4 }}>
                       ({conv}%)
                     </span>
                   )}
                 </span>
+                <b style={{ fontWeight: 700 }}>{step.value}</b>
               </div>
-              <div className="h-4 bg-gray-100 rounded overflow-hidden">
+              <div
+                style={{
+                  height: 8,
+                  background: "#FBE9EB",
+                  borderRadius: 5,
+                  overflow: "hidden",
+                }}
+              >
                 <div
-                  className="h-full transition-all duration-500 rounded"
-                  style={{ width: `${pct}%`, background: "#C8111A" }}
+                  style={{
+                    height: "100%",
+                    width: `${Math.max(pct, 4)}%`,
+                    background: "linear-gradient(90deg, #3DDC5A, #FFD93D)",
+                    borderRadius: 5,
+                    transition: "width 0.5s ease",
+                  }}
                 />
               </div>
             </div>
@@ -203,84 +287,274 @@ export default function AnalyticsTab() {
         })}
       </div>
 
-      {/* Gamification */}
+      {/* ===== Coffee Bean Game (red bg + gold border) ===== */}
       <div
-        className="rounded-xl p-3 md:p-5 border"
-        style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}
+        style={{
+          background: "#C8102E",
+          border: "1px solid #D4AF37",
+          borderRadius: 16,
+          padding: 16,
+        }}
       >
-        <div
-          className="text-xs md:text-sm font-semibold mb-2 md:mb-3 uppercase tracking-wide"
-          style={{ color: "#0F6E56" }}
+        <h3
+          className="flex items-center gap-2"
+          style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginTop: 0, marginBottom: 14 }}
         >
-          🌱 {t.gameTitle}
+          <svg
+            width="22"
+            height="16"
+            viewBox="0 0 40 24"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <g fill="#D4AF37">
+              <ellipse cx="10" cy="12" rx="9" ry="11" transform="rotate(-20 10 12)" />
+              <ellipse cx="26" cy="12" rx="9" ry="11" transform="rotate(18 26 12)" />
+            </g>
+            <g stroke="#8a6a1a" strokeWidth="1.4" fill="none" strokeLinecap="round">
+              <path d="M10 2 Q7 12 10 22" transform="rotate(-20 10 12)" />
+              <path d="M26 2 Q23 12 26 22" transform="rotate(18 26 12)" />
+            </g>
+          </svg>
+          {lang === "zh" ? "咖啡豆游戏" : "Coffee bean game"}
+        </h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 6,
+            textAlign: "center",
+          }}
+        >
+          <GameStat num={gami?.today_watering ?? 0} label={lang === "zh" ? "今日浇水" : "Today watered"} />
+          <GameStat num={gami?.total_garden_users ?? 0} label={lang === "zh" ? "活跃玩家" : "Active players"} />
+          <GameStat num={gami?.ready_users ?? 0} label={lang === "zh" ? "达30天" : "Reached day 30"} />
+          <GameStat num={gami?.avg_day_count ?? 0} label={lang === "zh" ? "平均天数" : "Avg days"} />
         </div>
-        <div className="grid grid-cols-4 gap-2 md:gap-3 text-center">
-          <Mini label={t.gameWatering} value={gami?.today_watering ?? 0} />
-          <Mini label={t.gameUsers} value={gami?.total_garden_users ?? 0} />
-          <Mini label={t.game30days} value={gami?.ready_users ?? 0} />
-          <Mini label={t.gameAvgDays} value={gami?.avg_day_count ?? 0} />
-        </div>
-      </div>
+        <button
+          onClick={() => setShowWaterModal(true)}
+          style={{
+            width: "100%",
+            marginTop: 14,
+            padding: 10,
+            borderRadius: 10,
+            border: "1.5px solid #fff",
+            background: "transparent",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 12.5,
+            fontFamily: "'Satoshi', sans-serif",
+            cursor: "pointer",
+          }}
+        >
+          {lang === "zh" ? "🌱 今日浇水" : "🌱 Water today"}
+        </button>
       </div>
 
-      {/* Export */}
-      <div className="bg-white rounded-xl p-3 md:p-5 border border-gray-100">
-        <div className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          📥 {t.exportTitle}
-        </div>
-        <div className="grid grid-cols-2 gap-2 md:gap-4">
+      {/* ===== Data Export (gold border) ===== */}
+      <div
+        style={{
+          border: "2px solid #D4AF37",
+          borderRadius: 16,
+          padding: 16,
+          background: "#fff",
+        }}
+      >
+        <h3
+          style={{
+            color: "#C8102E",
+            fontSize: 13,
+            fontWeight: 700,
+            marginBottom: 14,
+            marginTop: 0,
+          }}
+        >
+          {t.exportTitle}
+        </h3>
+        <div className="flex gap-2.5">
           <button
             onClick={exportUsers}
             disabled={exporting !== ""}
-            className="border border-gray-200 rounded-lg py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            style={{
+              flex: 1,
+              padding: 12,
+              borderRadius: 12,
+              border: "none",
+              background: "#C8102E",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 12.5,
+              fontFamily: "'Satoshi', sans-serif",
+              cursor: "pointer",
+              opacity: exporting ? 0.5 : 1,
+            }}
           >
-            {exporting === "users" ? "..." : `📥 ${t.exportUsers}`}
+            {exporting === "users" ? "..." : t.exportUsers}
           </button>
           <button
             onClick={exportTx}
             disabled={exporting !== ""}
-            className="border border-gray-200 rounded-lg py-2.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            style={{
+              flex: 1,
+              padding: 12,
+              borderRadius: 12,
+              border: "none",
+              background: "#C8102E",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 12.5,
+              fontFamily: "'Satoshi', sans-serif",
+              cursor: "pointer",
+              opacity: exporting ? 0.5 : 1,
+            }}
           >
-            {exporting === "tx" ? "..." : `📥 ${t.exportTxn}`}
+            {exporting === "tx" ? "..." : t.exportTxn}
           </button>
         </div>
-        <div className="text-[9px] text-gray-400 mt-2 text-center">
-          {t.exportHint}
+        <div
+          style={{
+            fontSize: 9.5,
+            color: "#A6A29B",
+            textAlign: "center",
+            marginTop: 10,
+            letterSpacing: "0.1px",
+          }}
+        >
+          Exports last 90 days · UTF-8 BOM · opens directly in Excel
         </div>
       </div>
+
+      {/* ===== Water Modal (cup shake) ===== */}
+      {showWaterModal && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowWaterModal(false);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(26,26,26,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              width: 230,
+              background: "transparent",
+              borderRadius: 18,
+              padding: "20px 16px 18px",
+              textAlign: "center",
+              position: "relative",
+            }}
+          >
+            <button
+              onClick={() => setShowWaterModal(false)}
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -4,
+                border: "none",
+                background: "rgba(255,255,255,0.9)",
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                fontSize: 15,
+                color: "#1A1A1A",
+                cursor: "pointer",
+                zIndex: 2,
+                lineHeight: 1,
+              }}
+            >
+              &times;
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/cup.webp"
+              alt="Cheers with HERAA coffee"
+              style={{
+                width: "62%",
+                display: "block",
+                margin: "0 auto",
+                animation: "cupShake 0.35s ease-in-out infinite",
+                transformOrigin: "50% 85%",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Keyframe animation */}
+      <style>{`
+        @keyframes cupShake {
+          0%, 100% { transform: rotate(-6deg); }
+          50% { transform: rotate(6deg); }
+        }
+      `}</style>
     </div>
   );
 }
 
-function Kpi({
+function MetricCard({
   label,
   value,
-  sub,
+  delta,
 }: {
   label: string;
-  value: string | number;
-  sub: string;
+  value: string;
+  delta: string;
 }) {
   return (
-    <div className="rounded-lg p-3" style={{ background: "#FFF3F3" }}>
-      <div className="text-[9px] text-gray-500 uppercase tracking-wide">
+    <div
+      style={{
+        background: "#C8102E",
+        borderRadius: 14,
+        padding: "14px 14px 12px",
+      }}
+    >
+      <div
+        style={{
+          textTransform: "uppercase",
+          letterSpacing: "0.3px",
+          fontSize: 10.5,
+          color: "rgba(255,255,255,0.8)",
+          fontWeight: 600,
+          marginBottom: 8,
+        }}
+      >
         {label}
       </div>
-      <div className="text-xl font-bold my-0.5" style={{ color: "#C8111A" }}>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#fff",
+          lineHeight: 1,
+        }}
+      >
         {value}
       </div>
-      <div className="text-[9px] text-gray-400">{sub}</div>
+      <div
+        style={{
+          fontSize: 10.5,
+          color: "rgba(255,255,255,0.7)",
+          marginTop: 6,
+          fontWeight: 500,
+        }}
+      >
+        {delta}
+      </div>
     </div>
   );
 }
 
-function Mini({ label, value }: { label: string; value: string | number }) {
+function GameStat({ num, label }: { num: number; label: string }) {
   return (
     <div>
-      <div className="text-sm font-bold" style={{ color: "#0F6E56" }}>
-        {value}
-      </div>
-      <div className="text-[9px]" style={{ color: "#0F6E56", opacity: 0.7 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{num}</div>
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", marginTop: 3 }}>
         {label}
       </div>
     </div>

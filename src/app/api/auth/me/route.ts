@@ -34,5 +34,6 @@ export async function GET(req: NextRequest) {
     member: data.member,
     wallet: data.wallet,
     transactions: txData?.transactions || [],
+    company_info: data.company_info || null,
   });
 }
