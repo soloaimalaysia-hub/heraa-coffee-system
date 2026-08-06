@@ -11,6 +11,8 @@ import TransactionsTab from "./components/TransactionsTab";
 import MembersTab from "./components/MembersTab";
 import EventsTab from "./components/EventsTab";
 import CompaniesTab from "./components/CompaniesTab";
+import LeadsTab from "./components/lead/LeadsTab";
+import AppointmentsTab from "./components/lead/AppointmentsTab";
 
 function AdminContent() {
   const searchParams = useSearchParams();
@@ -56,6 +58,12 @@ function AdminContent() {
         </div>
         <div style={{ display: tab === "companies" ? "block" : "none" }}>
           <CompaniesTab />
+        </div>
+        <div style={{ display: tab === "leads" ? "block" : "none" }}>
+          <LeadsTab />
+        </div>
+        <div style={{ display: tab === "appointments" ? "block" : "none" }}>
+          <AppointmentsTab />
         </div>
       </div>
     </div>
