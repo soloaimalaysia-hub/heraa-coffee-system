@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { fetchMe, Member, Wallet, Transaction, CompanyInfo } from "@/lib/session";
+import { fetchMe, clearSession, Member, Wallet, Transaction, CompanyInfo } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 import { track } from "@/lib/track";
 import { useLang } from "@/lib/LanguageContext";
@@ -60,6 +60,11 @@ export default function HomePage() {
     loadData();
   }, [loadData]);
 
+  function handleLogout() {
+    clearSession();
+    router.replace("/login");
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -100,6 +105,12 @@ export default function HomePage() {
             {lang === "zh" ? "EN" : "中文"}
           </button>
         </div>
+        <button
+          onClick={handleLogout}
+          className="absolute top-3 right-4 text-white/70 text-sm px-3 py-1.5"
+        >
+          {lang === "zh" ? "退出" : "Logout"}
+        </button>
         <div className="text-center">
           <div className="text-white font-bold text-lg tracking-widest">
             HERAA COFFEE

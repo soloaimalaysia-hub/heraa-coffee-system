@@ -7,14 +7,12 @@ const TABS = [
   { key: "home", path: "/home", icon: "🏠" },
   { key: "history", path: "/history", icon: "📋" },
   { key: "voucher", path: "/voucher", icon: "🎫" },
-  { key: "profile", path: "/profile", icon: "👤" },
 ] as const;
 
 const LABEL_MAP = {
   home: { zh: "首页", en: "Home" },
   history: { zh: "记录", en: "History" },
   voucher: { zh: "优惠券", en: "Voucher" },
-  profile: { zh: "我的", en: "Profile" },
 };
 
 export default function BottomNav() {
