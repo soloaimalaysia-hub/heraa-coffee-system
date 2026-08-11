@@ -2,7 +2,13 @@
 
 import { useLang } from "@/lib/LanguageContext";
 
-export default function TopBar() {
+export default function TopBar({
+  adminName,
+  onLogout,
+}: {
+  adminName?: string;
+  onLogout?: () => void;
+}) {
   const { lang, toggleLang } = useLang();
 
   return (
@@ -18,6 +24,11 @@ export default function TopBar() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/assets/logo.webp" alt="HERAA COFFEE" style={{ height: 30 }} />
         <div className="flex items-center gap-2.5">
+          {adminName && (
+            <span style={{ fontSize: 11, color: "#6B6864", fontWeight: 500 }}>
+              👤 {adminName}
+            </span>
+          )}
           <span
             onClick={toggleLang}
             style={{
@@ -31,6 +42,20 @@ export default function TopBar() {
           >
             {lang === "zh" ? "EN" : "中文"}
           </span>
+          {onLogout && (
+            <span
+              onClick={onLogout}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#6B6864",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              退出
+            </span>
+          )}
           <span style={{ fontSize: 10, color: "#C8102E", fontWeight: 500, opacity: 0.75 }}>
             v1.0
           </span>
