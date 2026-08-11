@@ -35,6 +35,25 @@ interface Funnel {
   closed_rate: number;
 }
 
+interface Suggestion {
+  staff_id: string;
+  staff_name: string;
+  score: number;
+  specialty_score: number;
+  close_rate_score: number;
+  availability_score: number;
+  reason: string;
+}
+
+interface NurtureLead {
+  lead_id: string;
+  lead_name: string;
+  lead_phone: string;
+  entered_at: string | null;
+  last_step: number | null;
+  last_sent_at: string | null;
+}
+
 const STAGES = ["new", "contacted", "nurturing", "scheduled", "closed_won", "closed_lost"];
 const STAGE_LABEL: Record<string, { zh: string; en: string; color: string }> = {
   new: { zh: "新进", en: "New", color: "#6B6864" },
@@ -50,6 +69,7 @@ export default function LeadsTab() {
   const [funnel, setFunnel] = useState<Funnel | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [nurturePool, setNurturePool] = useState<NurtureLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("");
@@ -57,6 +77,7 @@ export default function LeadsTab() {
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [sweeping, setSweeping] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newName, setNewName] = useState("");
@@ -64,8 +85,14 @@ export default function LeadsTab() {
   const [newCompany, setNewCompany] = useState("");
   const [adding, setAdding] = useState(false);
 
+  // AI match suggestion panel
+  const [matchLead, setMatchLead] = useState<Lead | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const [confirming, setConfirming] = useState("");
+
   const load = useCallback(async () => {
-    const [fn, ld, sf] = await Promise.all([
+    const [fn, ld, sf, np] = await Promise.all([
       supabase.rpc("heraa_lead_admin_funnel"),
       supabase.rpc("heraa_lead_admin_list_leads", {
         p_search: search.trim() || null,
@@ -73,10 +100,12 @@ export default function LeadsTab() {
         p_stage: stageFilter || null,
       }),
       supabase.rpc("heraa_lead_admin_list_staff"),
+      supabase.rpc("heraa_lead_admin_list_nurture_pool"),
     ]);
     if (fn.data) setFunnel(fn.data);
     if (ld.data) setLeads(ld.data);
     if (sf.data) setStaff(sf.data);
+    if (np.data) setNurturePool(np.data);
     setLoading(false);
   }, [search, stageFilter, sourceFilter]);
 
@@ -108,11 +137,36 @@ export default function LeadsTab() {
     load();
   }
 
-  async function handleAssign(leadId: string, staffId: string) {
+  async function openMatchPanel(lead: Lead) {
+    setMatchLead(lead);
+    setSuggestions([]);
+    setLoadingSuggest(true);
+    const { data } = await supabase.rpc("heraa_lead_admin_suggest_matches", { p_lead_id: lead.id });
+    setSuggestions(data || []);
+    setLoadingSuggest(false);
+  }
+
+  async function handleConfirmMatch(s: Suggestion) {
+    if (!matchLead) return;
+    setConfirming(s.staff_id);
+    await supabase.rpc("heraa_lead_admin_confirm_match", {
+      p_lead_id: matchLead.id,
+      p_staff_id: s.staff_id,
+      p_score: s.score,
+      p_reason: s.reason,
+    });
+    setConfirming("");
+    setMatchLead(null);
+    load();
+  }
+
+  async function handleManualAssign(staffId: string) {
+    if (!matchLead) return;
     await supabase.rpc("heraa_lead_admin_assign_staff", {
-      p_lead_id: leadId,
+      p_lead_id: matchLead.id,
       p_staff_id: staffId || null,
     });
+    setMatchLead(null);
     load();
   }
 
@@ -156,6 +210,25 @@ export default function LeadsTab() {
     }
     setImporting(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleRunSweep() {
+    setSweeping(true);
+    const { data } = await supabase.rpc("heraa_lead_admin_run_nurture_sweep");
+    setSweeping(false);
+    if (data) {
+      alert(
+        lang === "zh"
+          ? `本次扫描：${data.moved_to_nurture} 位转入培育池`
+          : `Sweep done: ${data.moved_to_nurture} moved to nurture pool`
+      );
+    }
+    load();
+  }
+
+  async function handleExitNurture(leadId: string) {
+    await supabase.rpc("heraa_lead_admin_exit_nurture", { p_lead_id: leadId, p_intent_tag: "warm" });
+    load();
   }
 
   const sources = Array.from(new Set(leads.map((l) => l.source)));
@@ -319,7 +392,7 @@ export default function LeadsTab() {
 
         {/* Table */}
         <div style={{ overflowX: "auto" }}>
-          <table className="w-full text-xs" style={{ minWidth: 640 }}>
+          <table className="w-full text-xs" style={{ minWidth: 680 }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #ECE8E1" }}>
                 <th className="text-left py-2 px-2">{lang === "zh" ? "姓名" : "Name"}</th>
@@ -362,18 +435,17 @@ export default function LeadsTab() {
                       </select>
                     </td>
                     <td className="py-2 px-2">
-                      <select
-                        value={l.assigned_staff_id || ""}
-                        onChange={(e) => handleAssign(l.id, e.target.value)}
-                        className="text-[11px] rounded px-1.5 py-1 border border-gray-200"
+                      <button
+                        onClick={() => openMatchPanel(l)}
+                        className="text-[11px] rounded px-2 py-1 border font-medium"
+                        style={{
+                          borderColor: l.assigned_staff_name ? "#ECE8E1" : "#D4AF37",
+                          color: l.assigned_staff_name ? "#374151" : "#B8791F",
+                          background: l.assigned_staff_name ? "#fff" : "#FBF3DD",
+                        }}
                       >
-                        <option value="">{lang === "zh" ? "未分配" : "Unassigned"}</option>
-                        {staff.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
+                        {l.assigned_staff_name ? `👤 ${l.assigned_staff_name}` : "🎯 " + (lang === "zh" ? "AI配对" : "AI Match")}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -382,6 +454,148 @@ export default function LeadsTab() {
           </table>
         </div>
       </div>
+
+      {/* Nurture pool */}
+      <div style={{ border: "1px solid #ECE8E1", borderRadius: 16, padding: 16, background: "#fff" }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", margin: 0 }}>
+            {lang === "zh" ? "🔁 长期培育池" : "🔁 Nurture Pool"}
+          </h3>
+          <button
+            onClick={handleRunSweep}
+            disabled={sweeping}
+            className="text-xs font-semibold rounded-lg px-3 py-1.5 border"
+            style={{ borderColor: "#C8102E", color: "#C8102E" }}
+          >
+            {sweeping ? "..." : lang === "zh" ? "立即执行扫描" : "Run sweep now"}
+          </button>
+        </div>
+        <p className="text-[11px] text-gray-400 mb-3">
+          {lang === "zh"
+            ? "超过设定天数没回应且未预约的 Lead 会自动转入这里（天数在 heraa_lead_settings.nurture_wait_days 设置）。文案由 Benny 团队提供，系统只负责判断谁该进/该出。"
+            : "Leads with no response past the wait window (and no appointment) land here automatically. Message content comes from Benny's team — this only tracks who's in/out."}
+        </p>
+        <div style={{ overflowX: "auto" }}>
+          <table className="w-full text-xs" style={{ minWidth: 480 }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid #ECE8E1" }}>
+                <th className="text-left py-2 px-2">{lang === "zh" ? "姓名" : "Name"}</th>
+                <th className="text-left py-2 px-2">{lang === "zh" ? "手机号" : "Phone"}</th>
+                <th className="text-left py-2 px-2">{lang === "zh" ? "进入时间" : "Entered"}</th>
+                <th className="text-left py-2 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {nurturePool.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-6 text-gray-300">
+                    {lang === "zh" ? "培育池是空的" : "Nurture pool is empty"}
+                  </td>
+                </tr>
+              ) : (
+                nurturePool.map((n) => (
+                  <tr key={n.lead_id} style={{ borderBottom: "1px solid #F5F3EE" }}>
+                    <td className="py-2 px-2 font-medium text-gray-700">{n.lead_name}</td>
+                    <td className="py-2 px-2 text-gray-500">{n.lead_phone}</td>
+                    <td className="py-2 px-2 text-gray-500">
+                      {n.entered_at ? new Date(n.entered_at).toLocaleDateString(lang === "zh" ? "zh-CN" : "en-MY") : "—"}
+                    </td>
+                    <td className="py-2 px-2 text-right">
+                      <button
+                        onClick={() => handleExitNurture(n.lead_id)}
+                        className="text-[11px] font-semibold"
+                        style={{ color: "#3E7A52" }}
+                      >
+                        {lang === "zh" ? "✓ 客户已回复，跳出" : "✓ Replied, exit pool"}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* AI match suggestion modal */}
+      {matchLead && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setMatchLead(null);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(26,26,26,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+            padding: 16,
+          }}
+        >
+          <div style={{ background: "#fff", borderRadius: 16, padding: 20, width: 420, maxWidth: "100%" }}>
+            <div className="flex items-center justify-between mb-1">
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", margin: 0 }}>
+                🎯 {lang === "zh" ? "AI 建议配对" : "AI Suggested Matches"}
+              </h3>
+              <button onClick={() => setMatchLead(null)} className="text-gray-400 text-lg leading-none">
+                &times;
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">{matchLead.name} · {matchLead.phone}</p>
+
+            {loadingSuggest ? (
+              <div className="text-center py-8 text-gray-300 text-xs">{lang === "zh" ? "计算中..." : "Scoring..."}</div>
+            ) : suggestions.length === 0 ? (
+              <div className="text-center py-6 text-gray-300 text-xs">
+                {lang === "zh" ? "暂无可用员工" : "No active staff"}
+              </div>
+            ) : (
+              <div className="space-y-2 mb-4">
+                {suggestions.map((s, i) => (
+                  <div
+                    key={s.staff_id}
+                    className="rounded-lg p-3"
+                    style={{ border: i === 0 ? "2px solid #D4AF37" : "1px solid #ECE8E1", background: i === 0 ? "#FBF3DD" : "#fff" }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-bold text-gray-800">
+                        {i === 0 && "⭐ "}{s.staff_name}
+                      </span>
+                      <span className="text-sm font-bold" style={{ color: "#C8102E" }}>{s.score}分</span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 mb-2">{s.reason}</p>
+                    <button
+                      onClick={() => handleConfirmMatch(s)}
+                      disabled={confirming === s.staff_id}
+                      className="w-full text-xs font-semibold rounded-lg py-1.5 text-white"
+                      style={{ background: "#C8102E" }}
+                    >
+                      {confirming === s.staff_id ? "..." : lang === "zh" ? "确认配对" : "Confirm match"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pt-3" style={{ borderTop: "1px solid #ECE8E1" }}>
+              <p className="text-[11px] text-gray-400 mb-1.5">{lang === "zh" ? "或手动指定" : "Or assign manually"}</p>
+              <select
+                defaultValue=""
+                onChange={(e) => e.target.value && handleManualAssign(e.target.value)}
+                className="w-full text-xs rounded-lg px-2 py-2 border border-gray-200"
+              >
+                <option value="" disabled>{lang === "zh" ? "选择员工" : "Choose staff"}</option>
+                <option value="">{lang === "zh" ? "取消分配" : "Unassign"}</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
