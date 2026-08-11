@@ -36,7 +36,6 @@ export default function TabNav({
     { key: "transactions", label: t.tabTransactions, icon: "/assets/icons/nav-transactions.webp" },
     { key: "members", label: t.tabMembers, icon: "/assets/icons/nav-members.webp" },
     { key: "events", label: t.tabEvents, emoji: "📅" },
-    { key: "companies", label: lang === "zh" ? "企业" : "Companies", emoji: "🏢" },
     { key: "leads", label: lang === "zh" ? "Lead" : "Leads", emoji: "📇" },
     { key: "appointments", label: lang === "zh" ? "预约" : "Bookings", emoji: "🗓️" },
   ];
