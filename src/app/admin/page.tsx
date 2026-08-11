@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import TopBar from "./components/TopBar";
-import TabNav, { TabKey } from "./components/TabNav";
+import TabNav from "./components/TabNav";
+import Sidebar from "./components/Sidebar";
+import { TabKey } from "./components/tabConfig";
 import AdminLogin from "./components/AdminLogin";
 import AdminChangePassword from "./components/AdminChangePassword";
 import AnalyticsTab from "./components/AnalyticsTab";
@@ -87,41 +89,51 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#F6F3EE" }}>
-      <TopBar
+    <div className="min-h-screen flex" style={{ background: "#F6F3EE" }}>
+      <Sidebar
+        active={tab}
+        onChange={setTab}
         adminName={adminName}
         onLogout={handleLogout}
         onChangePassword={() => setShowChangePassword(true)}
       />
-      <TabNav active={tab} onChange={setTab} />
 
-      <div style={{ padding: "18px 18px 28px" }} className="max-w-full md:max-w-6xl mx-auto">
-        <div style={{ display: tab === "analytics" ? "block" : "none" }}>
-          <AnalyticsTab />
-        </div>
-        <div style={{ display: tab === "simulate" ? "block" : "none" }}>
-          <SimulateTab />
-        </div>
-        <div style={{ display: tab === "whatsapp" ? "block" : "none" }}>
-          <WhatsAppTab />
-        </div>
-        <div style={{ display: tab === "transactions" ? "block" : "none" }}>
-          <TransactionsTab />
-        </div>
-        <div style={{ display: tab === "members" ? "block" : "none" }}>
-          <MembersTab />
-        </div>
-        <div style={{ display: tab === "events" ? "block" : "none" }}>
-          <EventsTab />
-        </div>
-        <div style={{ display: tab === "companies" ? "block" : "none" }}>
-          <CompaniesTab />
-        </div>
-        <div style={{ display: tab === "leads" ? "block" : "none" }}>
-          <LeadsTab />
-        </div>
-        <div style={{ display: tab === "appointments" ? "block" : "none" }}>
-          <AppointmentsTab />
+      <div className="flex-1 min-w-0">
+        <TopBar
+          adminName={adminName}
+          onLogout={handleLogout}
+          onChangePassword={() => setShowChangePassword(true)}
+        />
+        <TabNav active={tab} onChange={setTab} />
+
+        <div style={{ padding: "18px 18px 28px" }} className="max-w-full md:max-w-5xl">
+          <div style={{ display: tab === "analytics" ? "block" : "none" }}>
+            <AnalyticsTab />
+          </div>
+          <div style={{ display: tab === "simulate" ? "block" : "none" }}>
+            <SimulateTab />
+          </div>
+          <div style={{ display: tab === "whatsapp" ? "block" : "none" }}>
+            <WhatsAppTab />
+          </div>
+          <div style={{ display: tab === "transactions" ? "block" : "none" }}>
+            <TransactionsTab />
+          </div>
+          <div style={{ display: tab === "members" ? "block" : "none" }}>
+            <MembersTab />
+          </div>
+          <div style={{ display: tab === "events" ? "block" : "none" }}>
+            <EventsTab />
+          </div>
+          <div style={{ display: tab === "companies" ? "block" : "none" }}>
+            <CompaniesTab />
+          </div>
+          <div style={{ display: tab === "leads" ? "block" : "none" }}>
+            <LeadsTab />
+          </div>
+          <div style={{ display: tab === "appointments" ? "block" : "none" }}>
+            <AppointmentsTab />
+          </div>
         </div>
       </div>
 

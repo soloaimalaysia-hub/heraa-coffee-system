@@ -15,7 +15,7 @@ export default function TopBar({
 
   return (
     <header
-      className="sticky top-0 z-20"
+      className="md:hidden sticky top-0 z-20"
       style={{
         background: "#fff",
         padding: "14px 18px 12px",

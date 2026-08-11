@@ -1,25 +1,11 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
+import { getTabs, TabKey } from "./tabConfig";
 
-export type TabKey =
-  | "analytics"
-  | "simulate"
-  | "whatsapp"
-  | "transactions"
-  | "members"
-  | "events"
-  | "companies"
-  | "leads"
-  | "appointments";
+export type { TabKey };
 
-interface TabDef {
-  key: TabKey;
-  label: string;
-  icon?: string;
-  emoji?: string;
-}
-
+// Mobile-only horizontal icon strip — desktop uses the left Sidebar instead.
 export default function TabNav({
   active,
   onChange,
@@ -28,22 +14,12 @@ export default function TabNav({
   onChange: (t: TabKey) => void;
 }) {
   const { t, lang } = useLang();
-
-  const TABS: TabDef[] = [
-    { key: "analytics", label: t.tabData, icon: "/assets/icons/nav-analytics.webp" },
-    { key: "simulate", label: t.tabCoffee, icon: "/assets/icons/nav-coffee.webp" },
-    { key: "whatsapp", label: t.tabWhatsApp, icon: "/assets/icons/nav-whatsapp.webp" },
-    { key: "transactions", label: t.tabTransactions, icon: "/assets/icons/nav-transactions.webp" },
-    { key: "members", label: t.tabMembers, icon: "/assets/icons/nav-members.webp" },
-    { key: "events", label: t.tabEvents, emoji: "📅" },
-    { key: "leads", label: lang === "zh" ? "Lead" : "Leads", emoji: "📇" },
-    { key: "appointments", label: lang === "zh" ? "预约" : "Bookings", emoji: "🗓️" },
-  ];
+  const TABS = getTabs(t, lang);
 
   return (
     <div
       style={{ background: "#fff" }}
-      className="sticky top-[48px] z-10"
+      className="md:hidden sticky top-[48px] z-10"
     >
       <div
         className="flex justify-between overflow-x-auto scrollbar-hide"
