@@ -106,7 +106,7 @@ export default function AdminPage() {
         />
         <TabNav active={tab} onChange={setTab} />
 
-        <div style={{ padding: "18px 18px 28px" }} className="max-w-full md:max-w-5xl">
+        <div style={{ padding: "18px 24px 28px" }} className="w-full">
           <div style={{ display: tab === "analytics" ? "block" : "none" }}>
             <AnalyticsTab />
           </div>

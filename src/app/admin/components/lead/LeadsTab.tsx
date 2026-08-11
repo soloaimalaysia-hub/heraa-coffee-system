@@ -260,7 +260,7 @@ export default function LeadsTab() {
         >
           {lang === "zh" ? "📇 Lead 漏斗" : "📇 Lead Funnel"}
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4" style={{ gap: 10, marginBottom: 16 }}>
           <FunnelCard label={lang === "zh" ? "总数" : "Total"} value={funnel?.total ?? 0} sub="" />
           <FunnelCard
             label={lang === "zh" ? "已接触" : "Contacted"}

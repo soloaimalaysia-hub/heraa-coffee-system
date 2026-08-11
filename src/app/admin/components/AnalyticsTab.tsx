@@ -192,9 +192,8 @@ export default function AnalyticsTab() {
 
         {/* KPI Grid — red solid cards */}
         <div
+          className="grid grid-cols-2 lg:grid-cols-4"
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
             gap: 10,
             marginBottom: 16,
           }}
