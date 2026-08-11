@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function AdminLogin({ onLogin }: { onLogin: (token: string, name: string) => void }) {
+export default function AdminLogin({
+  onLogin,
+}: {
+  onLogin: (token: string, name: string, mustChangePassword: boolean) => void;
+}) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +34,7 @@ export default function AdminLogin({ onLogin }: { onLogin: (token: string, name:
       return;
     }
 
-    onLogin(data.session_token, data.name);
+    onLogin(data.session_token, data.name, !!data.must_change_password);
   }
 
   return (

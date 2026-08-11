@@ -5,9 +5,11 @@ import { useLang } from "@/lib/LanguageContext";
 export default function TopBar({
   adminName,
   onLogout,
+  onChangePassword,
 }: {
   adminName?: string;
   onLogout?: () => void;
+  onChangePassword?: () => void;
 }) {
   const { lang, toggleLang } = useLang();
 
@@ -42,6 +44,20 @@ export default function TopBar({
           >
             {lang === "zh" ? "EN" : "中文"}
           </span>
+          {onChangePassword && (
+            <span
+              onClick={onChangePassword}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#6B6864",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              改密码
+            </span>
+          )}
           {onLogout && (
             <span
               onClick={onLogout}

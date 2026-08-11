@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "./components/TopBar";
 import TabNav, { TabKey } from "./components/TabNav";
 import AdminLogin from "./components/AdminLogin";
+import AdminChangePassword from "./components/AdminChangePassword";
 import AnalyticsTab from "./components/AnalyticsTab";
 import SimulateTab from "./components/SimulateTab";
 import WhatsAppTab from "./components/WhatsAppTab";
@@ -20,6 +21,8 @@ const SESSION_KEY = "heraa_admin_session";
 export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [adminName, setAdminName] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [tab, setTab] = useState<TabKey>("analytics");
 
   const checkSession = useCallback(async () => {
@@ -31,6 +34,7 @@ export default function AdminPage() {
     const { data } = await supabase.rpc("heraa_admin_verify_session", { p_token: token });
     if (data?.valid) {
       setAdminName(data.name);
+      setMustChangePassword(!!data.must_change_password);
     } else {
       localStorage.removeItem(SESSION_KEY);
     }
@@ -41,9 +45,10 @@ export default function AdminPage() {
     checkSession();
   }, [checkSession]);
 
-  function handleLogin(token: string, name: string) {
+  function handleLogin(token: string, name: string, mustChange: boolean) {
     localStorage.setItem(SESSION_KEY, token);
     setAdminName(name);
+    setMustChangePassword(mustChange);
   }
 
   async function handleLogout() {
@@ -69,9 +74,25 @@ export default function AdminPage() {
     return <AdminLogin onLogin={handleLogin} />;
   }
 
+  const token = localStorage.getItem(SESSION_KEY) || "";
+
+  if (mustChangePassword) {
+    return (
+      <AdminChangePassword
+        token={token}
+        forced
+        onDone={() => setMustChangePassword(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ background: "#F6F3EE" }}>
-      <TopBar adminName={adminName} onLogout={handleLogout} />
+      <TopBar
+        adminName={adminName}
+        onLogout={handleLogout}
+        onChangePassword={() => setShowChangePassword(true)}
+      />
       <TabNav active={tab} onChange={setTab} />
 
       <div style={{ padding: "18px 18px 28px" }} className="max-w-full md:max-w-6xl mx-auto">
@@ -103,6 +124,15 @@ export default function AdminPage() {
           <AppointmentsTab />
         </div>
       </div>
+
+      {showChangePassword && (
+        <AdminChangePassword
+          token={token}
+          forced={false}
+          onDone={() => setShowChangePassword(false)}
+          onCancel={() => setShowChangePassword(false)}
+        />
+      )}
     </div>
   );
 }
