@@ -4,11 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
 
 const TABS = [
-  { key: "home", path: "/home", icon: "🏠" },
-  { key: "history", path: "/history", icon: "📋" },
-  { key: "voucher", path: "/voucher", icon: "🎫" },
-  { key: "referral", path: "/referral", icon: "👫" },
-  { key: "profile", path: "/profile", icon: "👤" },
+  { key: "home", path: "/home", icon: "/assets/icons/nav-home.webp" },
+  { key: "history", path: "/history", icon: "/assets/icons/nav-history.webp" },
+  { key: "voucher", path: "/voucher", icon: "/assets/icons/nav-voucher.webp" },
+  { key: "referral", path: "/referral", icon: "/assets/icons/nav-referral.webp" },
+  { key: "profile", path: "/profile", icon: "/assets/icons/nav-profile.webp" },
 ] as const;
 
 const LABEL_MAP = {
@@ -48,7 +48,18 @@ export default function BottomNav() {
               className="flex flex-col items-center justify-center gap-0.5 flex-1"
               style={{ color: active ? "#C8111A" : "#888888" }}
             >
-              <span className="text-xl">{tab.icon}</span>
+              <div
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  opacity: active ? 1 : 0.55,
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={tab.icon} alt={LABEL_MAP[tab.key][lang]} style={{ width: "100%", height: "100%", display: "block" }} />
+              </div>
               <span className="text-[10px] font-medium">
                 {LABEL_MAP[tab.key][lang]}
               </span>
@@ -91,7 +102,18 @@ export default function BottomNav() {
                   background: active ? "#FFF3F3" : "transparent",
                 }}
               >
-                <span className="text-xl">{tab.icon}</span>
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    boxShadow: active ? "0 3px 8px rgba(26,26,26,0.18)" : "none",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={tab.icon} alt={LABEL_MAP[tab.key][lang]} style={{ width: "100%", height: "100%", display: "block" }} />
+                </div>
                 <span
                   style={{
                     fontSize: 10,

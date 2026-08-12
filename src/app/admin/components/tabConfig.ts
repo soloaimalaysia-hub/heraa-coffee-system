@@ -35,8 +35,8 @@ export function getTabs(t: TabLabels, lang: "zh" | "en"): TabDef[] {
     { key: "whatsapp", label: t.tabWhatsApp, icon: "/assets/icons/nav-whatsapp.webp" },
     { key: "transactions", label: t.tabTransactions, icon: "/assets/icons/nav-transactions.webp" },
     { key: "members", label: t.tabMembers, icon: "/assets/icons/nav-members.webp" },
-    { key: "events", label: t.tabEvents, emoji: "📅" },
-    { key: "leads", label: lang === "zh" ? "Lead" : "Leads", emoji: "📇" },
-    { key: "appointments", label: lang === "zh" ? "预约" : "Bookings", emoji: "🗓️" },
+    { key: "events", label: t.tabEvents, icon: "/assets/icons/nav-events.webp" },
+    { key: "leads", label: lang === "zh" ? "Lead" : "Leads", icon: "/assets/icons/nav-leads.webp" },
+    { key: "appointments", label: lang === "zh" ? "预约" : "Bookings", icon: "/assets/icons/nav-appointments.webp" },
   ];
 }
