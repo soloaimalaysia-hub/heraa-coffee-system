@@ -8,6 +8,7 @@ const TABS = [
   { key: "history", path: "/history", icon: "📋" },
   { key: "voucher", path: "/voucher", icon: "🎫" },
   { key: "referral", path: "/referral", icon: "👫" },
+  { key: "profile", path: "/profile", icon: "👤" },
 ] as const;
 
 const LABEL_MAP = {
@@ -15,6 +16,7 @@ const LABEL_MAP = {
   history: { zh: "记录", en: "History" },
   voucher: { zh: "优惠券", en: "Voucher" },
   referral: { zh: "推荐好友", en: "Refer" },
+  profile: { zh: "我的", en: "Profile" },
 };
 
 // Mobile: fixed bottom bar (unchanged). Desktop (md+): fixed left sidebar —
@@ -69,10 +71,9 @@ export default function BottomNav() {
           zIndex: 50,
         }}
       >
-        <div className="text-center" style={{ padding: "20px 0 8px" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#C8111A", letterSpacing: "0.05em" }}>
-            HERAA
-          </span>
+        <div className="text-center" style={{ padding: "18px 8px 8px" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/logo.webp" alt="HERAA COFFEE" style={{ width: "100%", maxWidth: 56, margin: "0 auto", display: "block" }} />
         </div>
         <nav className="flex-1 flex flex-col items-center" style={{ gap: 6, padding: "8px 8px" }}>
           {TABS.map((tab) => {

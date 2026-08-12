@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { fetchMe, clearSession, Member, Wallet } from "@/lib/session";
+import { fetchMe, clearSession, Member, Wallet, CompanyInfo } from "@/lib/session";
 import { useLang } from "@/lib/LanguageContext";
 import BottomNav from "@/components/BottomNav";
 
@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [member, setMember] = useState<Member | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -21,6 +22,7 @@ export default function ProfilePage() {
     }
     setMember(me.member);
     setWallet(me.wallet);
+    setCompanyInfo(me.company_info || null);
     setLoading(false);
   }, [router]);
 
@@ -38,6 +40,8 @@ export default function ProfilePage() {
     );
   }
 
+  const isCorporate = member?.member_type === "corporate";
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
@@ -46,7 +50,11 @@ export default function ProfilePage() {
           {member?.name?.charAt(0) || "?"}
         </div>
         <div className="text-white text-lg font-semibold mt-3">{member?.name}</div>
-        <div className="text-white/60 text-xs mt-1">{member?.company} {t.walletEmployee}</div>
+        <div className="text-white/60 text-xs mt-1">
+          {isCorporate
+            ? `🏢 ${companyInfo?.name || ""} · ${lang === "zh" ? "员工" : "Staff"}`
+            : `☕ ${lang === "zh" ? "会员" : "Member"}`}
+        </div>
       </div>
 
       <div className="px-4 py-4 space-y-3">
@@ -75,14 +83,6 @@ export default function ProfilePage() {
           >
             <span className="text-xl">👫</span>
             <span className="text-sm font-medium text-gray-700">{t.referralTitle}</span>
-            <span className="ml-auto text-gray-300">›</span>
-          </button>
-          <button
-            onClick={() => router.push("/garden")}
-            className="w-full flex items-center gap-3 px-4 py-4 text-left border-b border-gray-50 hover:bg-gray-50"
-          >
-            <span className="text-xl">🌱</span>
-            <span className="text-sm font-medium text-gray-700">{t.walletGarden}</span>
             <span className="ml-auto text-gray-300">›</span>
           </button>
           <button
