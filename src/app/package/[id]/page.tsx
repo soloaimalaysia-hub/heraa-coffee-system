@@ -50,7 +50,7 @@ export default function PackageDetailPage() {
 
   if (!pkg) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white pb-20">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white pb-20 md:pb-0 md:pl-[84px]">
         <span className="text-4xl mb-3">📦</span>
         <span className="text-sm text-gray-400">Package not found</span>
         <button
@@ -70,7 +70,7 @@ export default function PackageDetailPage() {
   const totalCups = pkg.credits + pkg.bonus_credits;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-20">
+    <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
       <div className="py-8 text-center relative" style={{ background: "#C8111A" }}>
         <button

@@ -90,7 +90,7 @@ export default function HomePage() {
     : `${member?.name}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pb-20">
+    <div className="min-h-screen flex flex-col bg-gray-50 pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
       <div className="pt-12 pb-6 px-5 relative" style={{ background: "#C8111A" }}>
         <div className="absolute top-3 left-4">
@@ -200,7 +200,7 @@ export default function HomePage() {
         </button>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-3 mb-5">
           <button
             onClick={() => router.push("/wallet")}
             className="rounded-xl p-4 flex flex-col items-center gap-2 bg-white"
@@ -209,16 +209,6 @@ export default function HomePage() {
             <span className="text-2xl">📷</span>
             <span className="text-xs font-medium text-gray-600 text-center">
               {t.homeScanCollect}
-            </span>
-          </button>
-          <button
-            onClick={() => router.push("/garden")}
-            className="rounded-xl p-4 flex flex-col items-center gap-2 bg-white"
-            style={{ border: "1px solid #F0F0F0" }}
-          >
-            <span className="text-2xl">🌱</span>
-            <span className="text-xs font-medium text-gray-600 text-center">
-              {lang === "zh" ? "浇水" : "Water"}
             </span>
           </button>
           <button

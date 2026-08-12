@@ -39,7 +39,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pb-20">
+    <div className="min-h-screen flex flex-col bg-gray-50 pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
       <div className="pt-12 pb-6 text-center" style={{ background: "#C8111A" }}>
         <div className="w-16 h-16 rounded-full bg-white/20 mx-auto flex items-center justify-center text-white font-bold text-2xl">

@@ -89,7 +89,7 @@ export default function WalletPage() {
   const pct = wallet ? (wallet.balance / wallet.monthly_allowance) * 100 : 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-20">
+    <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
       <div
         className="pt-12 pb-6 text-center relative"
@@ -158,24 +158,6 @@ export default function WalletPage() {
             />
           </div>
         </div>
-
-        {/* Garden Entry */}
-        <button
-          onClick={() => router.push("/garden")}
-          className="w-full rounded-xl p-4 mb-4 flex items-center gap-4 text-left transition-colors hover:bg-green-50"
-          style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
-        >
-          <div className="text-3xl">🌱</div>
-          <div>
-            <div className="text-sm font-semibold text-green-700">
-              {t.walletGarden}
-            </div>
-            <div className="text-xs text-green-500">
-              {t.walletGardenSub}
-            </div>
-          </div>
-          <div className="ml-auto text-green-400 text-base">→</div>
-        </button>
 
         {/* Redeem Button */}
         <button

@@ -48,7 +48,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-20">
+    <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0 md:pl-[84px]">
       {/* Header */}
       <div className="py-8 text-center" style={{ background: "#C8111A" }}>
         <div className="text-white font-bold text-lg tracking-widest">

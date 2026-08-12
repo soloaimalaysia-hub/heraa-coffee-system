@@ -34,7 +34,7 @@ function SuccessContent() {
   const cups = Math.floor(balance / 6.5);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-20">
+    <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0 md:pl-[84px]">
       <div className="flex-1 flex flex-col items-center justify-center px-6">
         {/* Animated Checkmark */}
         <div
