@@ -16,6 +16,8 @@ interface Package {
   validity_days: number;
   is_popular: boolean;
   sort_order: number;
+  valid_from: string | null;
+  valid_until: string | null;
 }
 
 type Tab = "coffee" | "matcha";
@@ -34,7 +36,13 @@ export default function PackagesPage() {
         .select("*")
         .eq("is_available", true)
         .order("sort_order");
-      if (data) setPackages(data);
+      const now = new Date();
+      const visible = (data || []).filter((p: Package) => {
+        if (p.valid_from && new Date(p.valid_from) > now) return false;
+        if (p.valid_until && new Date(p.valid_until) < now) return false;
+        return true;
+      });
+      setPackages(visible);
       setLoading(false);
     })();
   }, []);
@@ -105,6 +113,14 @@ export default function PackagesPage() {
                   {t.packagesPopular}
                 </div>
               )}
+              {pkg.valid_until && (
+                <div
+                  className="absolute top-0 left-0 text-white text-[10px] font-bold px-3 py-1 rounded-br-xl"
+                  style={{ background: "#D4AF37" }}
+                >
+                  ⏱ {t.packagesLimitedTime}
+                </div>
+              )}
 
               <div className="text-lg font-bold text-gray-800 mb-1">
                 {lang === "zh" ? pkg.name_zh : pkg.name_en}
@@ -131,9 +147,10 @@ export default function PackagesPage() {
               </div>
 
               <div
-                className="w-full text-center text-sm font-bold rounded-xl py-3 text-gray-400 bg-gray-100"
+                className="w-full text-center text-sm font-bold rounded-xl py-3 text-white"
+                style={{ background: "#C8111A" }}
               >
-                {t.packagesComingSoon}
+                {t.packagesBuyBtn}
               </div>
             </button>
           ))

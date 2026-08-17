@@ -34,6 +34,7 @@ export default function HomePage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -48,6 +49,10 @@ export default function HomePage() {
     setCompanyInfo(me.company_info || null);
     setLoading(false);
     track("home_viewed", me.member.id);
+
+    supabase.rpc("heraa_get_member_credits", { p_member_id: me.member.id }).then(({ data }) => {
+      if (data?.success) setCreditsRemaining(data.credits_remaining);
+    });
 
     supabase.rpc("heraa_check_expired_redemptions", {
       p_member_id: me.member.id,
@@ -128,7 +133,45 @@ export default function HomePage() {
 
       {/* Content */}
       <div className="px-4 -mt-3">
-        {/* Coffee Credits Card */}
+        {/* Coffee Credits (Package system) */}
+        <div className="rounded-2xl p-5 mb-4 shadow-sm text-white" style={{ background: "#C8111A" }}>
+          <div className="text-xs font-semibold tracking-wide mb-1" style={{ color: "#FFD9D9" }}>
+            {t.creditsRemaining}
+          </div>
+          <div className="flex items-end gap-2 mb-1">
+            <span className="font-bold" style={{ fontSize: 42, lineHeight: 1 }}>
+              {creditsRemaining}
+            </span>
+          </div>
+          <div className="text-xs mb-3" style={{ color: "#FFD9D9" }}>
+            {t.creditsCupsRemaining}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => router.push("/scan")}
+              className="rounded-lg py-2 text-xs font-bold"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+            >
+              📷 {t.homeScanCollect}
+            </button>
+            <button
+              onClick={() => router.push("/packages")}
+              className="rounded-lg py-2 text-xs font-bold"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+            >
+              📦 {t.homeBuyPackage}
+            </button>
+            <button
+              onClick={() => router.push("/voucher")}
+              className="rounded-lg py-2 text-xs font-bold"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+            >
+              🎫 {t.homeMyVouchers}
+            </button>
+          </div>
+        </div>
+
+        {/* RM Wallet Card (unchanged) */}
         {isCorporate ? (
           <div
             className="rounded-2xl p-5 mb-4 shadow-sm"

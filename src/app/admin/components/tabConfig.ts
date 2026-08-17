@@ -6,6 +6,8 @@ export type TabKey =
   | "members"
   | "events"
   | "companies"
+  | "packages"
+  | "products"
   | "leads"
   | "appointments";
 
@@ -36,6 +38,8 @@ export function getTabs(t: TabLabels, lang: "zh" | "en"): TabDef[] {
     { key: "transactions", label: t.tabTransactions, icon: "/assets/icons/nav-transactions.webp" },
     { key: "members", label: t.tabMembers, icon: "/assets/icons/nav-members.webp" },
     { key: "events", label: t.tabEvents, icon: "/assets/icons/nav-events.webp" },
+    { key: "packages", label: lang === "zh" ? "配套" : "Packages", emoji: "📦" },
+    { key: "products", label: lang === "zh" ? "产品" : "Products", emoji: "🥤" },
     { key: "leads", label: lang === "zh" ? "Lead" : "Leads", icon: "/assets/icons/nav-leads.webp" },
     { key: "appointments", label: lang === "zh" ? "预约" : "Bookings", icon: "/assets/icons/nav-appointments.webp" },
   ];

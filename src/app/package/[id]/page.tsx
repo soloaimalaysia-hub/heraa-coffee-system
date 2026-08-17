@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useLang } from "@/lib/LanguageContext";
+import { fetchMe } from "@/lib/session";
 import BottomNav from "@/components/BottomNav";
 
 interface Package {
@@ -25,6 +26,8 @@ export default function PackageDetailPage() {
   const params = useParams();
   const [pkg, setPkg] = useState<Package | null>(null);
   const [loading, setLoading] = useState(true);
+  const [buying, setBuying] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -37,6 +40,26 @@ export default function PackageDetailPage() {
       setLoading(false);
     })();
   }, [params.id]);
+
+  async function handleBuy() {
+    setError("");
+    const me = await fetchMe();
+    if (!me) {
+      router.push("/login");
+      return;
+    }
+    setBuying(true);
+    const { data } = await supabase.rpc("heraa_purchase_package", {
+      p_member_id: me.member.id,
+      p_package_id: params.id,
+    });
+    setBuying(false);
+    if (data?.success) {
+      router.push("/home");
+    } else {
+      setError(data?.error || (lang === "zh" ? "购买失败，请重试" : "Purchase failed, please try again"));
+    }
+  }
 
   if (loading) {
     return (
@@ -142,13 +165,20 @@ export default function PackageDetailPage() {
           </div>
         </div>
 
-        {/* Buy Button (disabled) */}
+        {error && (
+          <div className="text-center text-sm mb-3" style={{ color: "#C8111A" }}>
+            {error}
+          </div>
+        )}
+
+        {/* Buy Button */}
         <button
-          disabled
-          className="w-full text-gray-400 font-bold rounded-xl text-lg bg-gray-100"
-          style={{ height: 58 }}
+          onClick={handleBuy}
+          disabled={buying}
+          className="w-full text-white font-bold rounded-xl text-lg disabled:opacity-60"
+          style={{ height: 58, background: "#C8111A" }}
         >
-          {t.packagesComingSoon}
+          {buying ? t.packagesBuying : `${t.packagesBuyBtn} RM${pkg.price_rm}`}
         </button>
       </div>
 

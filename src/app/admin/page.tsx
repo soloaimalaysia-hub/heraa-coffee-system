@@ -15,6 +15,8 @@ import TransactionsTab from "./components/TransactionsTab";
 import MembersTab from "./components/MembersTab";
 import EventsTab from "./components/EventsTab";
 import CompaniesTab from "./components/CompaniesTab";
+import PackagesTab from "./components/PackagesTab";
+import ProductsTab from "./components/ProductsTab";
 import LeadsTab from "./components/lead/LeadsTab";
 import AppointmentsTab from "./components/lead/AppointmentsTab";
 
@@ -127,6 +129,12 @@ export default function AdminPage() {
           </div>
           <div style={{ display: tab === "companies" ? "block" : "none" }}>
             <CompaniesTab />
+          </div>
+          <div style={{ display: tab === "packages" ? "block" : "none" }}>
+            <PackagesTab />
+          </div>
+          <div style={{ display: tab === "products" ? "block" : "none" }}>
+            <ProductsTab />
           </div>
           <div style={{ display: tab === "leads" ? "block" : "none" }}>
             <LeadsTab />
