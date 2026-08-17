@@ -61,7 +61,6 @@ export default function AnalyticsTab() {
   const [gami, setGami] = useState<Gamification | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState("");
-  const [showWaterModal, setShowWaterModal] = useState(false);
 
   const load = useCallback(async () => {
     const [ov, fn, gm] = await Promise.all([
@@ -286,70 +285,6 @@ export default function AnalyticsTab() {
         })}
       </div>
 
-      {/* ===== Coffee Bean Game (red bg + gold border) ===== */}
-      <div
-        style={{
-          background: "#C8102E",
-          border: "1px solid #D4AF37",
-          borderRadius: 16,
-          padding: 16,
-        }}
-      >
-        <h3
-          className="flex items-center gap-2"
-          style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginTop: 0, marginBottom: 14 }}
-        >
-          <svg
-            width="22"
-            height="16"
-            viewBox="0 0 40 24"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <g fill="#D4AF37">
-              <ellipse cx="10" cy="12" rx="9" ry="11" transform="rotate(-20 10 12)" />
-              <ellipse cx="26" cy="12" rx="9" ry="11" transform="rotate(18 26 12)" />
-            </g>
-            <g stroke="#8a6a1a" strokeWidth="1.4" fill="none" strokeLinecap="round">
-              <path d="M10 2 Q7 12 10 22" transform="rotate(-20 10 12)" />
-              <path d="M26 2 Q23 12 26 22" transform="rotate(18 26 12)" />
-            </g>
-          </svg>
-          {lang === "zh" ? "咖啡豆游戏" : "Coffee bean game"}
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 6,
-            textAlign: "center",
-          }}
-        >
-          <GameStat num={gami?.today_watering ?? 0} label={lang === "zh" ? "今日浇水" : "Today watered"} />
-          <GameStat num={gami?.total_garden_users ?? 0} label={lang === "zh" ? "活跃玩家" : "Active players"} />
-          <GameStat num={gami?.ready_users ?? 0} label={lang === "zh" ? "达30天" : "Reached day 30"} />
-          <GameStat num={gami?.avg_day_count ?? 0} label={lang === "zh" ? "平均天数" : "Avg days"} />
-        </div>
-        <button
-          onClick={() => setShowWaterModal(true)}
-          style={{
-            width: "100%",
-            marginTop: 14,
-            padding: 10,
-            borderRadius: 10,
-            border: "1.5px solid #fff",
-            background: "transparent",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 12.5,
-            fontFamily: "'Satoshi', sans-serif",
-            cursor: "pointer",
-          }}
-        >
-          {lang === "zh" ? "🌱 今日浇水" : "🌱 Water today"}
-        </button>
-      </div>
-
       {/* ===== Data Export (gold border) ===== */}
       <div
         style={{
@@ -423,75 +358,6 @@ export default function AnalyticsTab() {
         </div>
       </div>
 
-      {/* ===== Water Modal (cup shake) ===== */}
-      {showWaterModal && (
-        <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowWaterModal(false);
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(26,26,26,0.55)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999,
-          }}
-        >
-          <div
-            style={{
-              width: 230,
-              background: "transparent",
-              borderRadius: 18,
-              padding: "20px 16px 18px",
-              textAlign: "center",
-              position: "relative",
-            }}
-          >
-            <button
-              onClick={() => setShowWaterModal(false)}
-              style={{
-                position: "absolute",
-                top: -6,
-                right: -4,
-                border: "none",
-                background: "rgba(255,255,255,0.9)",
-                width: 26,
-                height: 26,
-                borderRadius: "50%",
-                fontSize: 15,
-                color: "#1A1A1A",
-                cursor: "pointer",
-                zIndex: 2,
-                lineHeight: 1,
-              }}
-            >
-              &times;
-            </button>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/cup.webp"
-              alt="Cheers with HERAA coffee"
-              style={{
-                width: "62%",
-                display: "block",
-                margin: "0 auto",
-                animation: "cupShake 0.35s ease-in-out infinite",
-                transformOrigin: "50% 85%",
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Keyframe animation */}
-      <style>{`
-        @keyframes cupShake {
-          0%, 100% { transform: rotate(-6deg); }
-          50% { transform: rotate(6deg); }
-        }
-      `}</style>
     </div>
   );
 }
@@ -544,17 +410,6 @@ function MetricCard({
         }}
       >
         {delta}
-      </div>
-    </div>
-  );
-}
-
-function GameStat({ num, label }: { num: number; label: string }) {
-  return (
-    <div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{num}</div>
-      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", marginTop: 3 }}>
-        {label}
       </div>
     </div>
   );

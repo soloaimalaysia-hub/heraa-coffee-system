@@ -78,14 +78,6 @@ export default function ProfilePage() {
         {/* Menu Items */}
         <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid #F0F0F0" }}>
           <button
-            onClick={() => router.push("/referral")}
-            className="w-full flex items-center gap-3 px-4 py-4 text-left border-b border-gray-50 hover:bg-gray-50"
-          >
-            <span className="text-xl">👫</span>
-            <span className="text-sm font-medium text-gray-700">{t.referralTitle}</span>
-            <span className="ml-auto text-gray-300">›</span>
-          </button>
-          <button
             onClick={() => router.push("/history")}
             className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-gray-50"
           >
