@@ -126,10 +126,15 @@ export default function MachineOrderPage() {
         <div className="flex-1 px-5 py-6">
           <div className="flex flex-col items-center mb-6">
             <div
-              className="rounded-2xl mb-3 flex items-center justify-center"
+              className="rounded-2xl mb-3 flex items-center justify-center overflow-hidden"
               style={{ width: 140, height: 140, background: "#8BC34A" }}
             >
-              <span style={{ fontSize: 48 }}>🥤</span>
+              {selected.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={selected.image_url} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: 48 }}>🥤</span>
+              )}
             </div>
             <div className="text-lg font-bold text-gray-800">{name}</div>
             <div className="text-sm text-gray-400">{selected.credits_cost} Credit{selected.credits_cost > 1 ? "s" : ""}</div>
@@ -209,10 +214,15 @@ export default function MachineOrderPage() {
               style={{ border: isSel ? "2px solid #C8111A" : "1px solid #F0F0F0" }}
             >
               <div
-                className="rounded-lg flex items-center justify-center shrink-0"
+                className="rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
                 style={{ width: 44, height: 44, background: p.category === "matcha" ? "#8BC34A" : "#6B4226" }}
               >
-                <span style={{ fontSize: 20 }}>🥤</span>
+                {p.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.image_url} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontSize: 20 }}>🥤</span>
+                )}
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium text-gray-800">{name}</div>
