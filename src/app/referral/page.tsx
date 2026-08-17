@@ -121,37 +121,28 @@ export default function ReferralPage() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Reward Explanation */}
-        <div className="bg-green-50 rounded-2xl p-5 border border-green-200">
-          <div className="text-base font-bold text-green-700 mb-3">🎉 {t.referralDesc}</div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">👤</span>
-              <span className="text-sm text-green-700">{t.referralYouGet}: <strong>{t.referralReward}</strong></span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">👫</span>
-              <span className="text-sm text-green-700">{t.referralFriendGet}: <strong>{t.referralReward}</strong></span>
-            </div>
+        {/* Reward Banner */}
+        <div className="rounded-2xl p-5" style={{ background: "#C8111A" }}>
+          <div className="text-white text-base font-bold mb-2">🎉 {t.referralDesc}</div>
+          <div className="text-white/90 text-sm leading-relaxed">
+            {t.referralYouGet} <strong>{t.referralReward}</strong>，{t.referralFriendGet} <strong>{t.referralReward}</strong>
           </div>
-          <div className="text-xs text-green-500 mt-3">{t.referralHowTo}</div>
         </div>
 
-        {/* My Code */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            {t.referralMyCode}
-          </div>
-          <div
-            className="text-3xl font-bold tracking-widest mb-4"
-            style={{ color: "#C8111A" }}
-          >
-            {member?.referral_code || "------"}
-          </div>
-          <div className="flex gap-2">
+        {/* My Link */}
+        <div>
+          <div className="text-xs font-semibold text-gray-400 mb-2">{t.referralMyCode}</div>
+          <div className="flex gap-2 mb-4">
+            <div
+              className="flex-1 bg-white rounded-xl px-4 py-3 text-sm text-gray-600 border border-gray-200 overflow-hidden text-ellipsis whitespace-nowrap"
+            >
+              {member?.referral_code
+                ? `heraa.com/ref/${member.referral_code}`
+                : "------"}
+            </div>
             <button
               onClick={handleCopy}
-              className="flex-1 text-sm font-semibold rounded-xl py-3 border transition-colors"
+              className="text-sm font-bold rounded-xl px-4 border transition-colors shrink-0"
               style={{
                 borderColor: copied ? "#16a34a" : "#C8111A",
                 color: copied ? "#16a34a" : "#C8111A",
@@ -160,12 +151,45 @@ export default function ReferralPage() {
             >
               {copied ? t.referralCopied : t.referralCopy}
             </button>
-            <button
-              onClick={handleShare}
-              className="flex-1 text-sm font-bold text-white rounded-xl py-3"
-              style={{ background: "#C8111A" }}
-            >
-              {t.referralShare}
+          </div>
+
+          {/* Share icons */}
+          <div className="flex justify-around bg-white rounded-xl border border-gray-100 py-4">
+            <button onClick={handleShare} className="flex flex-col items-center gap-1.5">
+              <span
+                className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                style={{ background: "#25D366" }}
+              >
+                💬
+              </span>
+              <span className="text-[10px] text-gray-500">WhatsApp</span>
+            </button>
+            <button onClick={handleShare} className="flex flex-col items-center gap-1.5">
+              <span
+                className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                style={{ background: "#1877F2" }}
+              >
+                📘
+              </span>
+              <span className="text-[10px] text-gray-500">Facebook</span>
+            </button>
+            <button onClick={handleShare} className="flex flex-col items-center gap-1.5">
+              <span
+                className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                style={{ background: "#0088cc" }}
+              >
+                ✈️
+              </span>
+              <span className="text-[10px] text-gray-500">Telegram</span>
+            </button>
+            <button onClick={handleShare} className="flex flex-col items-center gap-1.5">
+              <span
+                className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                style={{ background: "#6b7280" }}
+              >
+                ✉️
+              </span>
+              <span className="text-[10px] text-gray-500">Email</span>
             </button>
           </div>
         </div>

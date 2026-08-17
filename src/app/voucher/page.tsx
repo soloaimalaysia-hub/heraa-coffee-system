@@ -141,95 +141,61 @@ export default function VoucherPage() {
             const isUsed = v._tab === "used";
             const inactive = isExpired || isUsed;
 
+            const isFree = v.value === 0 || v.type === "free_drink";
+            const cardBg = inactive ? "#f3f4f6" : isFree ? "#D4AF37" : "#fff";
+            const textPrimary = inactive ? "#9ca3af" : isFree ? "#fff" : "#C8111A";
+            const textSecondary = inactive ? "#9ca3af" : isFree ? "rgba(255,255,255,0.8)" : "#9ca3af";
+
             return (
               <div
                 key={v.id}
-                className="bg-white rounded-xl overflow-hidden border"
+                className="rounded-xl overflow-hidden border p-4"
                 style={{
-                  borderColor: inactive ? "#e5e7eb" : "#FFD0D0",
+                  borderColor: inactive ? "#e5e7eb" : isFree ? "#D4AF37" : "#FFD0D0",
+                  background: cardBg,
                   opacity: inactive ? 0.6 : 1,
                 }}
               >
-                <div className="flex">
-                  {/* Left value section */}
-                  <div
-                    className="flex flex-col items-center justify-center px-5 py-4 min-w-[100px]"
-                    style={{
-                      background: inactive
-                        ? "#f3f4f6"
-                        : v.type === "free_drink"
-                        ? "linear-gradient(135deg, #FEF3C7, #F59E0B20)"
-                        : "#FEF2F2",
-                    }}
-                  >
-                    {v.value === 0 || v.type === "free_drink" ? (
-                      <span
-                        className="font-bold text-lg"
-                        style={{
-                          color: inactive ? "#9ca3af" : "#C8111A",
-                        }}
-                      >
-                        FREE
-                      </span>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-baseline gap-1">
+                    {isFree ? (
+                      <span className="font-bold text-2xl" style={{ color: textPrimary }}>1 Free</span>
                     ) : (
                       <>
-                        <span
-                          className="text-xs"
-                          style={{
-                            color: inactive ? "#9ca3af" : "#C8111A",
-                          }}
-                        >
-                          RM
-                        </span>
-                        <span
-                          className="font-bold text-2xl leading-tight"
-                          style={{
-                            color: inactive ? "#9ca3af" : "#C8111A",
-                          }}
-                        >
-                          {v.value}
-                        </span>
+                        <span className="font-bold text-2xl" style={{ color: textPrimary }}>RM{v.value}</span>
+                        <span className="text-xs" style={{ color: textSecondary }}>OFF</span>
                       </>
                     )}
                   </div>
-
-                  {/* Right info section */}
-                  <div className="flex-1 px-4 py-3 flex flex-col justify-between">
-                    <div>
-                      <div className="text-sm font-bold text-gray-800">
-                        {lang === "zh" ? v.title_zh : v.title_en}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {lang === "zh" ? v.description_zh : v.description_en}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="text-[10px] text-gray-400">
-                        {v.expires_at
-                          ? `${lang === "zh" ? "有效期至" : "Expires"} ${new Date(v.expires_at).toLocaleDateString("zh-CN")}`
-                          : ""}
-                      </div>
-                      {isUsed && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-500">
-                          {lang === "zh" ? "已使用" : "Used"}
-                        </span>
-                      )}
-                      {isExpired && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-500">
-                          {lang === "zh" ? "已过期" : "Expired"}
-                        </span>
-                      )}
-                      {!inactive && (
-                        <span
-                          className="text-[10px] font-semibold px-2 py-0.5 rounded"
-                          style={{ background: "#FEF2F2", color: "#C8111A" }}
-                        >
-                          {lang === "zh" ? "展会后可用" : "Available after expo"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  {isUsed && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-white/80 text-gray-500">
+                      {lang === "zh" ? "已使用" : "Used"}
+                    </span>
+                  )}
+                  {isExpired && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-white/80 text-gray-500">
+                      {lang === "zh" ? "已过期" : "Expired"}
+                    </span>
+                  )}
                 </div>
+                <div className="text-sm font-bold mb-0.5" style={{ color: isFree && !inactive ? "#fff" : "#1a1a1a" }}>
+                  {lang === "zh" ? v.title_zh : v.title_en}
+                </div>
+                <div className="text-xs mb-3" style={{ color: textSecondary }}>
+                  {lang === "zh" ? v.description_zh : v.description_en}
+                  {v.expires_at ? ` · ${lang === "zh" ? "有效期至" : "Expires"} ${new Date(v.expires_at).toLocaleDateString("zh-CN")}` : ""}
+                </div>
+                {!inactive && (
+                  <button
+                    className="w-full text-center text-sm font-bold rounded-lg py-2"
+                    style={{
+                      background: isFree ? "rgba(255,255,255,0.25)" : "#C8111A",
+                      color: "#fff",
+                    }}
+                  >
+                    {lang === "zh" ? "去使用" : "Use Now"}
+                  </button>
+                )}
               </div>
             );
           })
