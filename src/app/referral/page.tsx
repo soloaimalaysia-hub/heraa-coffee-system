@@ -41,13 +41,14 @@ export default function ReferralPage() {
 
   async function handleCopy() {
     if (!member?.referral_code) return;
+    const link = `${window.location.origin}/login?ref=${member.referral_code}`;
     try {
-      await navigator.clipboard.writeText(member.referral_code);
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       const el = document.createElement("textarea");
-      el.value = member.referral_code;
+      el.value = link;
       document.body.appendChild(el);
       el.select();
       document.execCommand("copy");
@@ -59,7 +60,7 @@ export default function ReferralPage() {
 
   async function handleShare() {
     if (!member?.referral_code) return;
-    const url = `https://heraa-coffee-system.vercel.app/login?ref=${member.referral_code}`;
+    const url = `${window.location.origin}/login?ref=${member.referral_code}`;
     const text = t.referralShareText.replace("{code}", member.referral_code) + "\n👉 " + url;
 
     if (navigator.share) {
@@ -137,7 +138,7 @@ export default function ReferralPage() {
               className="flex-1 bg-white rounded-xl px-4 py-3 text-sm text-gray-600 border border-gray-200 overflow-hidden text-ellipsis whitespace-nowrap"
             >
               {member?.referral_code
-                ? `heraa.com/ref/${member.referral_code}`
+                ? `${typeof window !== "undefined" ? window.location.host : ""}/login?ref=${member.referral_code}`
                 : "------"}
             </div>
             <button
