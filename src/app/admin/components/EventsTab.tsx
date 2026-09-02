@@ -122,7 +122,7 @@ export default function EventsTab() {
   }
 
   const eventUrl = selectedEvent
-    ? `https://heraa-coffee-system.vercel.app/event/${selectedEvent}`
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/event/${selectedEvent}`
     : "";
 
   return (

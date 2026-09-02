@@ -187,6 +187,7 @@ export default function VoucherPage() {
                 </div>
                 {!inactive && (
                   <button
+                    onClick={() => router.push("/wallet")}
                     className="w-full text-center text-sm font-bold rounded-lg py-2"
                     style={{
                       background: isFree ? "rgba(255,255,255,0.25)" : "#C8111A",

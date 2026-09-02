@@ -10,6 +10,7 @@ interface TxRow {
   drink_name: string;
   amount: number;
   type: string;
+  unit: "rm" | "credit";
   created_at: string;
   isNew?: boolean;
 }
@@ -20,34 +21,69 @@ export default function TransactionsTab() {
   const txRef = useRef<TxRow[]>([]);
 
   const loadData = useCallback(async () => {
-    const { data } = await supabase.rpc("heraa_screen_feed", { p_limit: 20 });
-    if (data) {
-      const mapped = data.map(
-        (
-          f: {
-            member_name: string;
-            drink_name: string;
-            amount: number;
-            created_at: string;
-          },
-          i: number
-        ) => ({
-          id: `init-${i}-${f.created_at}`,
-          member_name: f.member_name,
-          drink_name: f.drink_name,
-          amount: f.amount,
-          type: "debit",
-          created_at: f.created_at,
-        })
-      );
-      setTransactions(mapped);
-      txRef.current = mapped;
-    }
+    const [{ data: rmFeed }, { data: creditFeed }] = await Promise.all([
+      supabase.rpc("heraa_screen_feed", { p_limit: 20 }),
+      supabase
+        .from("heraa_package_transactions")
+        .select("id, credits_used, status, created_at, heraa_members(name), heraa_products(name_zh,name_en), heraa_machines(code)")
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    const rmRows: TxRow[] = (rmFeed || []).map(
+      (
+        f: {
+          member_name: string;
+          drink_name: string;
+          amount: number;
+          created_at: string;
+        },
+        i: number
+      ) => ({
+        id: `init-${i}-${f.created_at}`,
+        member_name: f.member_name,
+        drink_name: f.drink_name,
+        amount: f.amount,
+        type: "debit",
+        unit: "rm" as const,
+        created_at: f.created_at,
+      })
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const creditRows: TxRow[] = (creditFeed || []).map((f: any) => ({
+      id: `credit-${f.id}`,
+      member_name: f.heraa_members?.name || "Member",
+      drink_name: f.heraa_products?.name_zh || f.heraa_products?.name_en || "-",
+      amount: f.credits_used,
+      type: f.status === "failed" ? "credit" : "debit",
+      unit: "credit" as const,
+      created_at: f.created_at,
+    }));
+
+    const merged = [...rmRows, ...creditRows]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 20);
+
+    setTransactions(merged);
+    txRef.current = merged;
   }, []);
 
   useEffect(() => {
     loadData();
-    const channel = supabase
+
+    function pushNew(newTx: TxRow) {
+      txRef.current = [newTx, ...txRef.current].slice(0, 20);
+      setTransactions([...txRef.current]);
+      setTimeout(() => {
+        txRef.current = txRef.current.map((t) =>
+          t.id === newTx.id ? { ...t, isNew: false } : t
+        );
+        setTransactions([...txRef.current]);
+      }, 1000);
+    }
+
+    const rmChannel = supabase
       .channel("heraa-admin-transactions")
       .on(
         "postgres_changes",
@@ -71,31 +107,61 @@ export default function TransactionsTab() {
             { p_member_id: record.member_id }
           );
 
-          const newTx: TxRow = {
+          pushNew({
             id: record.id,
             member_name: memberName || "Member",
             drink_name: record.description,
             amount: record.amount,
             type: record.type,
+            unit: "rm",
             created_at: record.created_at,
             isNew: true,
+          });
+        }
+      )
+      .subscribe();
+
+    const creditChannel = supabase
+      .channel("heraa-admin-credit-transactions")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "heraa_package_transactions",
+        },
+        async (payload) => {
+          const record = payload.new as {
+            id: string;
+            member_id: string;
+            product_id: string;
+            credits_used: number;
+            status: string;
+            created_at: string;
           };
 
-          txRef.current = [newTx, ...txRef.current].slice(0, 20);
-          setTransactions([...txRef.current]);
+          const [{ data: memberName }, { data: product }] = await Promise.all([
+            supabase.rpc("heraa_get_member_name", { p_member_id: record.member_id }),
+            supabase.from("heraa_products").select("name_zh,name_en").eq("id", record.product_id).single(),
+          ]);
 
-          setTimeout(() => {
-            txRef.current = txRef.current.map((t) =>
-              t.id === record.id ? { ...t, isNew: false } : t
-            );
-            setTransactions([...txRef.current]);
-          }, 1000);
+          pushNew({
+            id: `credit-${record.id}`,
+            member_name: memberName || "Member",
+            drink_name: product?.name_zh || product?.name_en || "-",
+            amount: record.credits_used,
+            type: record.status === "failed" ? "credit" : "debit",
+            unit: "credit",
+            created_at: record.created_at,
+            isNew: true,
+          });
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(rmChannel);
+      supabase.removeChannel(creditChannel);
     };
   }, [loadData]);
 
@@ -156,14 +222,26 @@ export default function TransactionsTab() {
                 · {tx.drink_name}
               </div>
             </div>
-            <div
-              className="text-xs md:text-sm font-semibold px-2 py-1 rounded-md md:justify-self-end whitespace-nowrap"
-              style={{
-                background: tx.type === "credit" ? "#dcfce7" : "#FFE4E4",
-                color: tx.type === "credit" ? "#0F6E56" : "#C8111A",
-              }}
-            >
-              {tx.type === "credit" ? "+" : "-"}RM {Number(tx.amount).toFixed(2)}
+            <div className="flex items-center gap-1.5 md:justify-self-end">
+              <span
+                className="text-[9px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                style={{
+                  background: tx.unit === "credit" ? "#FFF3E0" : "#EEF2FF",
+                  color: tx.unit === "credit" ? "#B8860B" : "#4338CA",
+                }}
+              >
+                {tx.unit === "credit" ? "Credits" : "RM"}
+              </span>
+              <div
+                className="text-xs md:text-sm font-semibold px-2 py-1 rounded-md whitespace-nowrap"
+                style={{
+                  background: tx.type === "credit" ? "#dcfce7" : "#FFE4E4",
+                  color: tx.type === "credit" ? "#0F6E56" : "#C8111A",
+                }}
+              >
+                {tx.type === "credit" ? "+" : "-"}
+                {tx.unit === "credit" ? `${tx.amount} Credit` : `RM ${Number(tx.amount).toFixed(2)}`}
+              </div>
             </div>
           </div>
         ))}

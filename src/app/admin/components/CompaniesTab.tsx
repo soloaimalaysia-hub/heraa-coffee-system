@@ -200,7 +200,7 @@ export default function CompaniesTab() {
 
   // QR view
   if (view === "qr" && selectedCompany) {
-    const regUrl = `https://heraa-coffee-system.vercel.app/register/${selectedCompany.code}`;
+    const regUrl = `${window.location.origin}/register/${selectedCompany.code}`;
     return (
       <div>
         <button onClick={() => setView("list")} className="text-sm mb-4" style={{ color: "#C8111A" }}>
