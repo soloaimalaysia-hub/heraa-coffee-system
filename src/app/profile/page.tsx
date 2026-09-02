@@ -44,11 +44,11 @@ export default function ProfilePage() {
   const isCorporate = member?.member_type === "corporate";
 
   const menuItems = [
-    { icon: "👤", label: lang === "zh" ? "我的资料" : "My Info", onClick: () => setShowInfo((s) => !s) },
-    { icon: "📦", label: lang === "zh" ? "我的配套" : "My Packages", onClick: () => router.push("/packages") },
-    { icon: "📋", label: t.historyTitle, onClick: () => router.push("/history") },
-    { icon: "🎫", label: lang === "zh" ? "我的优惠券" : "My Vouchers", onClick: () => router.push("/voucher") },
-    { icon: "👫", label: t.referralTitle, onClick: () => router.push("/referral") },
+    { iconSrc: "/assets/icons/nav-profile.webp", label: lang === "zh" ? "我的资料" : "My Info", onClick: () => setShowInfo((s) => !s) },
+    { iconSrc: "/assets/icons/nav-coffee.webp", label: lang === "zh" ? "我的配套" : "My Packages", onClick: () => router.push("/packages") },
+    { iconSrc: "/assets/icons/nav-history.webp", label: t.historyTitle, onClick: () => router.push("/history") },
+    { iconSrc: "/assets/icons/nav-voucher.webp", label: lang === "zh" ? "我的优惠券" : "My Vouchers", onClick: () => router.push("/voucher") },
+    { iconSrc: "/assets/icons/nav-referral.webp", label: t.referralTitle, onClick: () => router.push("/referral") },
     { icon: "⚙️", label: lang === "zh" ? "设置" : "Settings", onClick: toggleLang, trailing: lang === "zh" ? "中文" : "English" },
   ];
 
@@ -112,7 +112,14 @@ export default function ProfilePage() {
               onClick={item.onClick}
               className={`w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-gray-50 ${i < menuItems.length - 1 ? "border-b border-gray-50" : ""}`}
             >
-              <span className="text-xl">{item.icon}</span>
+              {item.iconSrc ? (
+                <span className="w-6 h-6 flex items-center justify-center shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.iconSrc} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
+                </span>
+              ) : (
+                <span className="text-xl w-6 flex items-center justify-center shrink-0">{item.icon}</span>
+              )}
               <span className="text-sm font-medium text-gray-700">{item.label}</span>
               {item.trailing ? (
                 <span className="ml-auto text-xs text-gray-400">{item.trailing}</span>
