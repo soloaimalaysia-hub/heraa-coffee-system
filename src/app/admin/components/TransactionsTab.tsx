@@ -23,11 +23,7 @@ export default function TransactionsTab() {
   const loadData = useCallback(async () => {
     const [{ data: rmFeed }, { data: creditFeed }] = await Promise.all([
       supabase.rpc("heraa_screen_feed", { p_limit: 20 }),
-      supabase
-        .from("heraa_package_transactions")
-        .select("id, credits_used, status, created_at, heraa_members(name), heraa_products(name_zh,name_en), heraa_machines(code)")
-        .order("created_at", { ascending: false })
-        .limit(20),
+      supabase.rpc("heraa_admin_recent_credit_transactions", { p_limit: 20 }),
     ]);
 
     const rmRows: TxRow[] = (rmFeed || []).map(
@@ -53,8 +49,8 @@ export default function TransactionsTab() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const creditRows: TxRow[] = (creditFeed || []).map((f: any) => ({
       id: `credit-${f.id}`,
-      member_name: f.heraa_members?.name || "Member",
-      drink_name: f.heraa_products?.name_zh || f.heraa_products?.name_en || "-",
+      member_name: f.member_name || "Member",
+      drink_name: f.drink_name || "-",
       amount: f.credits_used,
       type: f.status === "failed" ? "credit" : "debit",
       unit: "credit" as const,
